@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>深淵裂隙：餘燼 - 暗黑打寶網頁版</title>
+    <style>
+        :root {
+            --dark-bg: #0a0a0a;
+            --panel-bg: #1a1a1a;
+            --text-gold: #d4af37;
+            --rarity-common: #ffffff;
+            --rarity-rare: #0070dd;
+            --rarity-legendary: #ff8000;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: #ccc;
+            font-family: 'Segoe UI', serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            user-select: none;
+        }
+
+        #game-container {
+            width: 800px;
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* 戰鬥區域 */
+        .panel {
+            background: var(--panel-bg);
+            border: 2px solid #333;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+
+        #battle-screen {
+            text-align: center;
+            min-height: 300px;
+        }
+
+        .monster-name {
+            color: #ff4444;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .hp-bar {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            margin: 10px 0;
+        }
+
+        #hp-fill {
+            width: 100%;
+            height: 100%;
+            background: #a00;
+            transition: width 0.2s;
+        }
+
+        /* 按鈕與日誌 */
+        button {
+            background: #442222;
+            color: #ddd;
+            border: 1px solid #774444;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover { background: #663333; }
+
+        #log {
+            height: 150px;
+            overflow-y: auto;
+            font-size: 13px;
+            background: #000;
+            padding: 10px;
+            margin-top: 20px;
+            text-align: left;
+            border: 1px solid #333;
+        }
+
+        /* 背包區域 */
+        .inventory-slot {
+            background: #222;
+            border: 1px solid #444;
+            margin: 5px 0;
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .legendary { color: var(--rarity-legendary); font-weight: bold; text-shadow: 0 0 5px rgba(255,128,0,0.5); }
+        .rare { color: var(--rarity-rare); }
+        .common { color: var(--rarity-common); }
+
+        .stats { color: var(--text-gold); font-size: 18px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <h1 style="color: var(--text-gold); text-shadow: 2px 2px 5px black;">ABYSS RIFT</h1>
+
+    <div id="game-container">
+        <div class="panel" id="battle-screen">
+            <div class="stats">角色攻擊力: <span id="char-atk">10</span></div>
+            <div class="monster-name" id="mob-name">荒野食屍鬼</div>
+            <div class="hp-bar"><div id="hp-fill"></div></div>
+            <div id="mob-hp-text">HP: 100 / 100</div>
+            <br>
+            <button onclick="attack()">揮劍攻擊</button>
+            <div id="log"></div>
+        </div>
+
+        <div class="panel">
+            <h3 style="color: var(--text-gold);">戰利品倉庫 (點擊裝備)</h3>
+            <div id="inventory"></div>
+        </div>
+    </div>
+
+<script>
+    // 遊戲數據
+    let player = { atk: 10, baseAtk: 10 };
+    let monster = { name: "食屍鬼", hp: 100, maxHp: 100, level: 1 };
+    const logEl = document.getElementById('log');
+
+    // 隨機名稱與屬性
+    const prefixes = ["破碎的", "邪惡的", "遠古的", "毀滅之", "獄火"];
+    const types = ["長劍", "戰斧", "法杖", "匕首"];
+
+    function log(msg, color = "#ccc") {
+        const entry = document.createElement('div');
+        entry.style.color = color;
+        entry.innerHTML = `> ${msg}`;
+        logEl.prepend(entry);
+    }
+
+    function updateUI() {
+        document.getElementById('hp-fill').style.width = (monster.hp / monster.maxHp * 100) + "%";
+        document.getElementById('mob-hp-text').innerText = `HP: ${Math.floor(monster.hp)} / ${monster.maxHp}`;
+        document.getElementById('mob-name').innerText = `Lv.${monster.level} ${monster.name}`;
+        document.getElementById('char-atk').innerText = player.atk;
+    }
+
+    function attack() {
+        // 玩家攻擊
+        let damage = player.atk + Math.floor(Math.random() * 5);
+        monster.hp -= damage;
+        log(`你對 ${monster.name} 造成了 ${damage} 點傷害。`);
+
+        if (monster.hp <= 0) {
+            log(`${monster.name} 已被擊殺！`, "#ffcc00");
+            dropLoot();
+            spawnMonster();
+        }
+        updateUI();
+    }
+
+    function spawnMonster() {
+        monster.level++;
+        monster.maxHp = 100 + (monster.level * 20);
+        monster.hp = monster.maxHp;
+        const names = ["骷髏兵", "沉淪魔", "痛苦恐懼", "深淵祭司"];
+        monster.name = names[Math.floor(Math.random() * names.length)];
+    }
+
+    function dropLoot() {
+        const rand = Math.random();
+        let rarity = "common";
+        let bonus = monster.level;
+
+        if (rand > 0.95) { rarity = "legendary"; bonus *= 5; }
+        else if (rand > 0.7) { rarity = "rare"; bonus *= 2; }
+
+        const itemName = prefixes[Math.floor(Math.random() * prefixes.length)] + types[Math.floor(Math.random() * types.length)];
+        const itemAtk = Math.floor(Math.random() * 5) + bonus;
+
+        const itemObj = { name: itemName, atk: itemAtk, rarity: rarity };
+        addItemToUI(itemObj);
+        log(`獲得了掉落物：${itemName} (+${itemAtk} ATK)`, rarity === "legendary" ? "orange" : "cyan");
+    }
+
+    function addItemToUI(item) {
+        const inv = document.getElementById('inventory');
+        const div = document.createElement('div');
+        div.className = `inventory-slot ${item.rarity}`;
+        div.innerText = `${item.name} [攻擊 +${item.atk}]`;
+        div.onclick = () => {
+            player.atk = player.baseAtk + item.atk;
+            log(`裝備了 ${item.name}，現在攻擊力為 ${player.atk}`, "#fff");
+            updateUI();
+            // 簡單處理：穿上後就變色表示正在使用
+            Array.from(inv.children).forEach(c => c.style.border = "1px solid #444");
+            div.style.border = "1px solid #d4af37";
+        };
+        inv.prepend(div);
+    }
+
+    updateUI();
+</script>
+</body>
+</html>

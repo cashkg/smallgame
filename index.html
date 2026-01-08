@@ -403,4 +403,35 @@
             updateUI();
         };
 
-        // 為每個物品生成一個獨特的ID，以便於識別和
+        // 為每個物品生成一個獨特的ID，以便於識別和取消裝備時找到舊的div
+        item.id = Date.now() + Math.random();
+        div.setAttribute('data-item-id', item.id);
+
+        inv.prepend(div);
+    }
+
+    function getItemRarityText(rarity) {
+        switch(rarity) {
+            case 'common': return '普通';
+            case 'magic': return '魔法';
+            case 'rare': return '稀有';
+            case 'legendary': return '傳奇';
+            case 'unique': return '獨特';
+            default: return '未知';
+        }
+    }
+
+
+    // 獲取 CSS 變數的值
+    const style = getComputedStyle(document.body);
+    const var_rarity_magic = style.getPropertyValue('--rarity-magic');
+    const var_rarity_rare = style.getPropertyValue('--rarity-rare');
+    const var_rarity_legendary = style.getPropertyValue('--rarity-legendary');
+    const var_rarity_unique = style.getPropertyValue('--rarity-unique');
+    const var_rarity_common = style.getPropertyValue('--rarity-common');
+
+    updateUI();
+    log("歡迎來到《深淵裂隙：餘燼》！點擊『揮劍攻擊』開始戰鬥。", var_text_gold);
+</script>
+</body>
+</html>

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>深淵裂隙：餘燼 - 暗黑打寶網頁版 V2</title>
+    <style>
+        :root {
+            --dark-bg: #0a0a0a;
+            --panel-bg: #1a1a1a;
+            --text-gold: #d4af37;
+            --rarity-common: #ffffff; /* 白色 */
+            --rarity-magic: #8888ff;  /* 藍色 */
+            --rarity-rare: #ffff00;   /* 黃色 */
+            --rarity-legendary: #ff8000; /* 橘色 */
+            --rarity-unique: #cc00ff; /* 紫色 (新增) */
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: #ccc;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            user-select: none;
+            overflow-x: hidden; /* 防止滾動條 */
+        }
+
+        #game-container {
+            width: 900px; /* 稍微寬一點 */
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* 主面板樣式 */
+        .panel {
+            background: var(--panel-bg);
+            border: 2px solid #333;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            position: relative; /* 用於傷害數字定位 */
+        }
+
+        /* 標題 */
+        h1 {
+            color: var(--text-gold);
+            text-shadow: 2px 2px 5px black;
+            margin-bottom: 10px;
+        }
+
+        h3 {
+            color: var(--text-gold);
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        /* 戰鬥區塊 */
+        #battle-screen {
+            text-align: center;
+            min-height: 350px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .stats-player {
+            color: var(--text-gold);
+            font-size: 18px;
+            margin-bottom: 15px;
+            text-align: left;
+            padding-left: 10px;
+        }
+
+        .monster-name {
+            color: #ff4444;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .hp-bar {
+            width: 90%;
+            height: 25px;
+            background: #333;
+            margin: 10px auto;
+            border: 1px solid #555;
+            position: relative;
+        }
+
+        #hp-fill {
+            height: 100%;
+            background: linear-gradient(to right, #a00, #ff4444);
+            transition: width 0.2s ease-out;
+            border-right: 1px solid #770000;
+        }
+        #hp-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            line-height: 25px;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px black;
+        }
+
+
+        /* 攻擊按鈕 */
+        button {
+            background: #442222;
+            color: #ddd;
+            border: 1px solid #774444;
+            padding: 12px 25px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            transition: background 0.1s;
+            margin-top: 20px;
+        }
+
+        button:hover { background: #663333; }
+        button:active { background: #884444; transform: translateY(1px); }
+
+        /* 戰鬥日誌 */
+        #log {
+            height: 180px; /* 增加高度 */
+            overflow-y: auto;
+            font-size: 14px;
+            background: #000;
+            padding: 10px;
+            margin-top: 20px;
+            text-align: left;
+            border: 1px solid #333;
+            line-height: 1.4;
+        }
+        #log div { margin-bottom: 3px; }
+
+        /* 背包區域 */
+        #inventory {
+            min-height: 350px; /* 讓背包區塊有最小高度 */
+            overflow-y: auto;
+            max-height: 500px; /* 設定最大高度，超出則滾動 */
+        }
+
+        .inventory-slot {
+            background: #222;
+            border: 1px solid #444;
+            margin: 8px 0; /* 增加間距 */
+            padding: 10px;
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.1s, border-color 0.1s;
+            position: relative; /* 用於tooltip */
+        }
+
+        .inventory-slot:hover {
+            background: #333;
+            border-color: #777;
+        }
+
+        /* 稀有度顏色 */
+        .item-name.common { color: var(--rarity-common); }
+        .item-name.magic { color: var(--rarity-magic); }
+        .item-name.rare { color: var(--rarity-rare); }
+        .item-name.legendary { color: var(--rarity-legendary); font-weight: bold; text-shadow: 0 0 5px rgba(255,128,0,0.5); }
+        .item-name.unique { color: var(--rarity-unique); font-weight: bold; text-shadow: 0 0 5px rgba(204,0,255,0.7); }
+
+        .item-stats {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+        .item-stats .atk-value { color: #fff; font-weight: bold; }
+        .item-stats .rarity-text { font-style: italic; color: #888; }
+
+
+        /* 傷害數字動畫 */
+        .damage-popup {
+            position: absolute;
+            top: 50%; /* 顯示在怪物血條附近 */
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 32px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            animation: damage-fade-out 0.8s forwards;
+            pointer-events: none; /* 讓點擊穿透 */
+            z-index: 10;
+        }
+
+        @keyframes damage-fade-out {
+            0% { opacity: 1; transform: translate(-50%, -50px); }
+            100% { opacity: 0; transform: translate(-50%, -100px); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1 style="color: var(--text-gold); text-shadow: 2px 2px 5px black;">ABYSS RIFT: EMBERS V2</h1>
+
+    <div id="game-container">
+        <div class="panel" id="battle-screen">
+            <div class="stats-player">角色攻擊力: <span id="char-atk">10</span></div>
+            <div class="monster-name" id="mob-name">荒野食屍鬼</div>
+            <div class="hp-bar">
+                <div id="hp-fill"></div>
+                <div id="hp-text">HP: 100 / 100</div>
+            </div>
+            <button onclick="attack()">揮劍攻擊</button>
+            <div id="log"></div>
+        </div>
+
+        <div class="panel">
+            <h3>戰利品倉庫 (點擊裝備以穿戴)</h3>
+            <div id="inventory"></div>
+        </div>
+    </div>
+
+<script>
+    // 遊戲數據
+    let player = { atk: 10, baseAtk: 10, equippedItem: null }; // 添加 equippedItem 追蹤已裝備物品
+    let monster = { name: "食屍鬼", hp: 100, maxHp: 100, level: 1 };
+    const logEl = document.getElementById('log');
+    const battleScreenEl = document.getElementById('battle-screen');
+
+    // 隨機名稱與屬性
+    const prefixes = [
+        "腐蝕的", "邪惡的", "遠古的", "毀滅之", "獄火", "淬毒", "風暴", "深淵", "亡魂"
+    ];
+    const types = ["長劍", "戰斧", "法杖", "匕首", "巨錘", "弓箭"];
+    const suffixes = ["之刃", "的憤怒", "的意志", "的低語", "的審判"]; // 新增後綴
+
+    // 掉落機率 (調整)
+    const dropChances = {
+        'common': 0.5, // 50%
+        'magic': 0.3,  // 30%
+        'rare': 0.15,  // 15%
+        'legendary': 0.04, // 4%
+        'unique': 0.01 // 1% (新增最稀有等級)
+    };
+
+    function log(msg, color = "#ccc") {
+        const entry = document.createElement('div');
+        entry.style.color = color;
+        entry.innerHTML = `&gt; ${msg}`;
+        logEl.prepend(entry); // 最新的日誌在最上面
+        if (logEl.children.length > 50) { // 限制日誌數量
+            logEl.removeChild(logEl.lastChild);
+        }
+    }
+
+    function updateUI() {
+        const hpFill = document.getElementById('hp-fill');
+        const hpText = document.getElementById('hp-text');
+
+        hpFill.style.width = (monster.hp / monster.maxHp * 100) + "%";
+        hpText.innerText = `HP: ${Math.floor(monster.hp)} / ${monster.maxHp}`;
+        document.getElementById('mob-name').innerText = `Lv.${monster.level} ${monster.name}`;
+        document.getElementById('char-atk').innerText = player.atk;
+    }
+
+    // 傷害數字視覺效果
+    function showDamagePopup(damage) {
+        const popup = document.createElement('div');
+        popup.className = 'damage-popup';
+        popup.innerText = `-${damage}`;
+        battleScreenEl.appendChild(popup);
+
+        // 動畫結束後移除
+        popup.addEventListener('animationend', () => {
+            popup.remove();
+        });
+    }
+
+    async function attack() {
+        // 玩家攻擊
+        let damage = player.atk + Math.floor(Math.random() * 5); // 基礎攻擊力 + 0-4 隨機值
+        monster.hp -= damage;
+        log(`你對 ${monster.name} 造成了 ${damage} 點傷害。`, "#eee");
+        showDamagePopup(damage); // 顯示傷害數字
+
+        updateUI();
+
+        if (monster.hp <= 0) {
+            log(`${monster.name} 已被擊殺！`, "#ffcc00");
+            await new Promise(resolve => setTimeout(resolve, 500)); // 等待一下讓玩家看到死亡訊息
+            dropLoot();
+            spawnMonster();
+            updateUI(); // 更新新的怪物UI
+        }
+    }
+
+    function spawnMonster() {
+        monster.level++;
+        monster.maxHp = 100 + (monster.level * 25); // 怪物血量隨等級增加更多
+        monster.hp = monster.maxHp;
+        const names = ["骷髏兵", "沉淪魔", "痛苦恐懼", "深淵祭司", "詛咒狼人", "嗜血蝙蝠"];
+        monster.name = names[Math.floor(Math.random() * names.length)];
+        log(`一個新的敵人出現了：Lv.${monster.level} ${monster.name}！`, "#ff6666");
+    }
+
+    function dropLoot() {
+        const rand = Math.random();
+        let rarity = 'common';
+
+        // 根據機率決定稀有度
+        if (rand < dropChances.unique) {
+            rarity = 'unique';
+        } else if (rand < dropChances.legendary + dropChances.unique) {
+            rarity = 'legendary';
+        } else if (rand < dropChances.rare + dropChances.legendary + dropChances.unique) {
+            rarity = 'rare';
+        } else if (rand < dropChances.magic + dropChances.rare + dropChances.legendary + dropChances.unique) {
+            rarity = 'magic';
+        }
+
+        let bonusAtk = 0;
+        let itemBaseAtk = Math.floor(Math.random() * (monster.level / 2) + 1); // 基礎攻擊力隨怪物等級增長
+
+        switch (rarity) {
+            case 'magic': bonusAtk = monster.level * 1.5; break;
+            case 'rare': bonusAtk = monster.level * 3; break;
+            case 'legendary': bonusAtk = monster.level * 7; break;
+            case 'unique': bonusAtk = monster.level * 15; break; // 獨特物品超高加成
+            default: bonusAtk = monster.level * 0.5; break;
+        }
+
+        const itemAtk = itemBaseAtk + Math.floor(Math.random() * bonusAtk); // 最終攻擊力
+
+        const itemName = generateItemName(rarity);
+
+        const itemObj = { name: itemName, atk: itemAtk, rarity: rarity };
+        addItemToUI(itemObj);
+
+        let logColor;
+        switch(rarity) {
+            case 'magic': logColor = var_rarity_magic; break;
+            case 'rare': logColor = var_rarity_rare; break;
+            case 'legendary': logColor = var_rarity_legendary; break;
+            case 'unique': logColor = var_rarity_unique; break;
+            default: logColor = var_rarity_common; break;
+        }
+        log(`獲得掉落物: <span class="${rarity}">${itemName}</span> (攻擊 +${itemAtk})`, logColor);
+    }
+
+    function generateItemName(rarity) {
+        let name = "";
+        let prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+        let type = types[Math.floor(Math.random() * types.length)];
+        let suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+
+        switch(rarity) {
+            case 'common':
+                name = type;
+                break;
+            case 'magic':
+                name = `${prefix} ${type}`;
+                break;
+            case 'rare':
+                name = `${prefix} ${type} ${suffix}`;
+                break;
+            case 'legendary':
+            case 'unique': // 傳奇和獨特可以有更史詩的名字
+                name = `${prefix} ${type} ${suffix} (傳奇)`;
+                if (rarity === 'unique') name = `★獨特★ ${prefix} ${type} ${suffix}`;
+                break;
+        }
+        return name;
+    }
+
+
+    function addItemToUI(item) {
+        const inv = document.getElementById('inventory');
+        const div = document.createElement('div');
+        div.className = `inventory-slot`;
+
+        div.innerHTML = `
+            <span class="item-name ${item.rarity}">${item.name}</span><br>
+            <span class="item-stats">攻擊力: <span class="atk-value">+${item.atk}</span> <span class="rarity-text">(${getItemRarityText(item.rarity)})</span></span>
+        `;
+        div.onclick = () => {
+            // 如果有舊裝備，恢復其邊框顏色
+            if (player.equippedItem) {
+                const oldEquippedDiv = document.querySelector(`.inventory-slot[data-item-id="${player.equippedItem.id}"]`);
+                if (oldEquippedDiv) {
+                    oldEquippedDiv.style.border = "1px solid #444";
+                }
+            }
+
+            // 穿上新裝備
+            player.atk = player.baseAtk + item.atk;
+            player.equippedItem = item; // 記錄已裝備的物品
+            div.style.border = "1px solid var(--text-gold)"; // 突出顯示當前裝備
+
+            log(`你裝備了 <span class="${item.rarity}">${item.name}</span>，現在攻擊力為 ${player.atk}！`, "#fff");
+            updateUI();
+        };
+
+        // 為每個物品生成一個獨特的ID，以便於識別和

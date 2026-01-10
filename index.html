@@ -2,20 +2,21 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>暗黑背包：煉獄獵魔人</title>
+    <title>暗黑背包：終極煉獄版</title>
     <style>
         :root {
-            --bg: #050505;
+            --bg: #0a0a0a;
             --panel: #1a1a1a;
             --gold: #d4af37;
-            --rarity-legendary: #ff8000;
+            --legendary: #ff8000;
+            --rare: #0070dd;
             --grid-size: 50px;
         }
 
         body {
             background: var(--bg);
             color: #eee;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -29,22 +30,22 @@
             background: #000;
             border-bottom: 2px solid var(--gold);
             text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
 
         #main-layout {
             display: flex;
             gap: 20px;
             padding: 20px;
-            max-width: 1200px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
-        /* 背包區域 */
-        .area-title { color: var(--gold); margin-bottom: 10px; font-weight: bold; }
-        
+        /* 背包與網格 */
         #backpack-grid {
             width: 300px;
             height: 400px;
-            background: var(--panel);
+            background: #111;
             border: 3px solid #444;
             position: relative;
             background-image: 
@@ -63,193 +64,243 @@
             justify-content: center;
             font-size: 11px;
             cursor: grab;
+            background: rgba(40, 40, 40, 0.95);
+            z-index: 10;
+            text-align: center;
             box-sizing: border-box;
-            background: rgba(40, 40, 40, 0.9);
-            z-index: 5;
         }
-        .item:active { cursor: grabbing; z-index: 100; }
-        .item.synergy { border-color: #0f0; box-shadow: 0 0 10px #0f0; }
-        
-        /* 掉落物區域 */
-        #loot-zone {
-            width: 250px;
-            background: #0a0a0a;
-            border: 1px dashed #555;
-            padding: 10px;
-            min-height: 400px;
+        .item.synergy { border-color: #0f0 !important; box-shadow: 0 0 15px #0f0; }
+
+        /* 面板與區塊 */
+        .panel {
+            background: var(--panel);
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 4px;
         }
 
-        .loot-card {
-            background: #222;
+        #loot-zone, #shop-zone {
+            width: 280px;
+            min-height: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .card {
+            background: #252525;
             border: 1px solid #444;
             margin-bottom: 10px;
-            padding: 8px;
-            border-left: 4px solid #fff;
+            padding: 10px;
+            position: relative;
         }
+        .rarity-common { border-left: 4px solid #fff; }
+        .rarity-rare { border-left: 4px solid var(--rare); color: var(--rare); }
+        .rarity-legendary { border-left: 4px solid var(--legendary); color: var(--legendary); font-weight: bold; }
 
-        /* 戰鬥與日誌 */
-        #battle-panel {
-            width: 300px;
-            display: flex;
-            flex-direction: column;
+        /* 按鈕樣式 */
+        button {
+            background: #4a0000;
+            color: white;
+            border: 1px solid var(--gold);
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: 0.2s;
         }
+        button:hover { background: #7a0000; }
+        button.buy { background: #004a00; border-color: #0f0; }
+        button.reroll { background: #4a4a00; font-size: 12px; }
 
         #log {
-            height: 300px;
+            width: 300px;
+            height: 150px;
             background: #000;
             border: 1px solid #333;
             padding: 10px;
-            font-size: 13px;
+            font-size: 12px;
             overflow-y: auto;
             margin-top: 10px;
+            color: #aaa;
         }
 
-        button {
-            background: #400;
-            color: #fff;
-            border: 1px solid var(--gold);
-            padding: 10px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        button:hover { background: #600; }
-
-        .sell-btn {
-            background: #224;
-            margin-top: 5px;
-            font-size: 10px;
-            padding: 2px 5px;
-        }
-
-        .rarity-common { border-left-color: #fff; }
-        .rarity-rare { border-left-color: #0070dd; color: #0070dd; }
-        .rarity-legendary { border-left-color: var(--rarity-legendary); color: var(--rarity-legendary); }
+        .stats-box { color: var(--gold); font-size: 1.2em; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <div id="header">
-    <h1>DIABLO BAG: HELL HUNTER</h1>
-    <div>金幣: <span id="gold-val" style="color:var(--gold)">100</span> | 當前層數: <span id="floor-val">1</span></div>
+    <h1>DIABLO BAG: ETERNAL HUNTER</h1>
+    <div>
+        金幣: <span id="gold-display" style="color:var(--gold); font-size: 1.5em;">0</span> 
+        | 樓層: <span id="floor-display">1</span>
+        <button onclick="saveGame()" style="margin-left: 20px; background: #222;">手動存檔</button>
+        <button onclick="clearSave()" style="background: #222;">重置進度</button>
+    </div>
 </div>
 
 <div id="main-layout">
+    <div class="panel">
+        <h3 style="color:var(--gold)">黑市商人</h3>
+        <button class="reroll" onclick="refreshShop()">花費 10G 刷新貨架</button>
+        <div id="shop-zone"></div>
+    </div>
+
     <div>
-        <div class="area-title">物品欄 (放置物品以獲得屬性)</div>
+        <div class="stats-box">總戰力: <span id="atk-display">10</span></div>
         <div id="backpack-grid"></div>
-        <div style="margin-top:10px; font-size: 12px; color: #888;">提示: 把磨刀石放在武器旁有驚喜。</div>
-    </div>
-
-    <div id="battle-panel">
-        <div class="area-title">戰鬥資訊</div>
-        <div id="status">當前總攻擊力: <span id="total-atk">10</span></div>
-        <button onclick="fight()">前往下一層挑戰</button>
         <div id="log"></div>
+        <button onclick="startBattle()" style="width:100%; height:50px; font-size: 20px; margin-top:10px;">進入傳送門戰鬥</button>
     </div>
 
-    <div>
-        <div class="area-title">戰利品 (掉落區)</div>
-        <div id="loot-zone">
-            <p style="color:#666; text-align:center">擊敗怪物後<br>裝備會出現在此</p>
-        </div>
+    <div class="panel">
+        <h3 style="color:var(--gold)">戰利品掉落區</h3>
+        <div id="loot-zone"></div>
     </div>
 </div>
 
 <script>
-    let gold = 100;
-    let floor = 1;
-    let bagItems = [];
-    const gridSize = 50;
+    // 遊戲狀態
+    let gameState = {
+        gold: 100,
+        floor: 1,
+        bagItems: []
+    };
 
-    // 裝備原型庫
+    const gridSize = 50;
     const itemTemplates = [
-        { name: "短劍", w: 1, h: 2, atk: 5, color: "#333", type: "weapon" },
-        { name: "戰斧", w: 2, h: 2, atk: 12, color: "#422", type: "weapon" },
+        { name: "短劍", w: 1, h: 2, atk: 5, color: "#444", type: "weapon" },
+        { name: "戰斧", w: 2, h: 2, atk: 12, color: "#522", type: "weapon" },
         { name: "磨刀石", w: 1, h: 1, atk: 0, color: "#543", type: "buff" },
         { name: "長矛", w: 1, h: 3, atk: 8, color: "#234", type: "weapon" },
-        { name: "匕首", w: 1, h: 1, atk: 3, color: "#222", type: "weapon" }
+        { name: "木盾", w: 2, h: 2, atk: 2, color: "#343", type: "weapon" }
     ];
 
-    function log(msg, color="#ccc") {
-        const l = document.getElementById('log');
-        l.innerHTML = `<div style="color:${color}">> ${msg}</div>` + l.innerHTML;
+    // 初始化與存檔加載
+    window.onload = () => {
+        const saved = localStorage.getItem('diablo_bag_save');
+        if (saved) {
+            const data = JSON.parse(saved);
+            gameState.gold = data.gold;
+            gameState.floor = data.floor;
+            // 重新渲染背包
+            data.bagItems.forEach(item => createInBag(item, true));
+        }
+        refreshShop();
+        updateUI();
+        log("歡迎回到煉獄。整理你的背包，然後開始戰鬥。");
+    };
+
+    function log(msg, color="#aaa") {
+        const logBox = document.getElementById('log');
+        logBox.innerHTML = `<div style="color:${color}">> ${msg}</div>` + logBox.innerHTML;
+    }
+
+    function updateUI() {
+        document.getElementById('gold-display').innerText = gameState.gold;
+        document.getElementById('floor-display').innerText = gameState.floor;
+        calculateAtk();
     }
 
     // 戰鬥邏輯
-    function fight() {
-        const currentAtk = calculatePower();
-        const monsterHp = 20 + (floor * 15);
+    function startBattle() {
+        const power = calculateAtk();
+        const monsterHp = 15 + (gameState.floor * 12);
         
-        log(`層數 ${floor}: 遭遇惡魔 (HP: ${monsterHp})`);
+        log(`挑戰第 ${gameState.floor} 層守衛 (HP: ${monsterHp})...`);
         
-        if (currentAtk >= monsterHp) {
-            const reward = 10 + floor * 5;
-            gold += reward;
-            log(`勝利！獲得 ${reward} 金幣。`, "gold");
+        if (power >= monsterHp) {
+            const winGold = 15 + (gameState.floor * 5);
+            gameState.gold += winGold;
+            log(`擊殺成功！獲得 ${winGold} 金幣。`, "gold");
             generateLoot();
-            floor++;
-            updateUI();
+            gameState.floor++;
         } else {
-            log(`失敗！攻擊力不足，撤退回城。`, "#ff4444");
+            log(`戰力不足！你被打成重傷，退回城鎮休息。`, "#ff4444");
         }
+        updateUI();
+        saveGame();
     }
 
-    // 生成隨機裝備
+    // 掉落與商店生成
+    function generateItemData(isShop = false) {
+        const base = itemTemplates[Math.floor(Math.random() * itemTemplates.length)];
+        const roll = Math.random();
+        let rarity = "common";
+        let mult = 1;
+
+        if (roll > 0.92) { rarity = "legendary"; mult = 3; }
+        else if (roll > 0.75) { rarity = "rare"; mult = 1.7; }
+
+        const levelMult = 1 + (gameState.floor * 0.1);
+        return {
+            ...base,
+            id: Math.random().toString(36).substr(2, 9),
+            atk: Math.floor(base.atk * mult * levelMult),
+            rarity: rarity,
+            price: Math.floor((isShop ? 30 : 10) * mult * levelMult),
+            x: 0, y: 0
+        };
+    }
+
     function generateLoot() {
-        const lootZone = document.getElementById('loot-zone');
-        if (floor % 1 === 0) { // 每次勝利必掉
-            const temp = itemTemplates[Math.floor(Math.random() * itemTemplates.length)];
-            const rarityRoll = Math.random();
-            let rarity = "common";
-            let multiplier = 1;
-
-            if (rarityRoll > 0.9) { rarity = "legendary"; multiplier = 3; }
-            else if (rarityRoll > 0.7) { rarity = "rare"; multiplier = 1.8; }
-
-            const newItem = {
-                ...temp,
-                id: Date.now() + Math.random(),
-                atk: Math.floor(temp.atk * multiplier),
-                rarity: rarity,
-                price: Math.floor(10 * multiplier * (floor/2))
-            };
-
-            const card = document.createElement('div');
-            card.className = `loot-card rarity-${rarity}`;
-            card.innerHTML = `
-                <b>${newItem.name}</b> (${newItem.w}x${newItem.h})<br>
-                ATK: +${newItem.atk} | 價值: ${newItem.price}<br>
-                <button onclick="takeLoot('${encodeURIComponent(JSON.stringify(newItem))}', this)">放入背包</button>
-                <button class="sell-btn" onclick="sellLoot(${newItem.price}, this)">賣掉</button>
-            `;
-            lootZone.prepend(card);
-        }
+        const zone = document.getElementById('loot-zone');
+        const item = generateItemData(false);
+        renderCard(zone, item, "撿取", "賣掉");
     }
 
-    function sellLoot(price, btn) {
-        gold += price;
+    function refreshShop() {
+        if (gameState.gold < 10) return;
+        if (event) gameState.gold -= 10;
+        const zone = document.getElementById('shop-zone');
+        zone.innerHTML = "";
+        for(let i=0; i<3; i++) {
+            renderCard(zone, generateItemData(true), "購買", "無視");
+        }
+        updateUI();
+    }
+
+    function renderCard(parent, item, actionName, discardName) {
+        const div = document.createElement('div');
+        div.className = `card rarity-${item.rarity}`;
+        div.innerHTML = `
+            <strong>${item.name}</strong> [${item.w}x${item.h}]<br>
+            攻擊力: +${item.atk}<br>
+            價格: ${item.price} G<br>
+            <button class="buy" onclick="handleAction('${actionName}', ${JSON.stringify(item).replace(/"/g, '&quot;')}, this)">${actionName}</button>
+            <button onclick="handleAction('${discardName}', ${JSON.stringify(item).replace(/"/g, '&quot;')}, this)">${discardName}</button>
+        `;
+        parent.prepend(div);
+    }
+
+    function handleAction(action, item, btn) {
+        if (action === "購買") {
+            if (gameState.gold >= item.price) {
+                gameState.gold -= item.price;
+                createInBag(item);
+            } else { log("金幣不足！", "red"); return; }
+        } else if (action === "撿取") {
+            createInBag(item);
+        } else if (action === "賣掉") {
+            gameState.gold += item.price;
+            log(`賣掉裝備，換得 ${item.price} 金幣。`);
+        }
         btn.parentElement.remove();
         updateUI();
-        log(`賣出裝備獲得了 ${price} 金幣。`);
     }
 
-    function takeLoot(itemDataStr, btn) {
-        const data = JSON.parse(decodeURIComponent(itemDataStr));
-        btn.parentElement.remove();
-        createInBag(data);
-    }
-
-    function createInBag(data) {
+    // 背包核心功能
+    function createInBag(data, isLoad = false) {
         const el = document.createElement('div');
         el.className = 'item';
         el.style.width = (data.w * gridSize - 4) + 'px';
         el.style.height = (data.h * gridSize - 4) + 'px';
-        el.style.background = data.color;
-        if(data.rarity === 'legendary') el.style.boxShadow = "inset 0 0 10px #ff8000";
+        el.style.backgroundColor = data.color;
+        if(data.rarity === 'legendary') el.style.border = "2px solid var(--legendary)";
+        if(data.rarity === 'rare') el.style.border = "2px solid var(--rare)";
         
-        el.innerHTML = `<span style="pointer-events:none">${data.name}<br>+${data.atk}</span>`;
-        
-        // 簡易拖拽
+        el.innerHTML = `<b>${data.name}</b><br>+${data.atk}`;
+        el.style.left = (data.x * gridSize) + 'px';
+        el.style.top = (data.y * gridSize) + 'px';
+
         el.onmousedown = (e) => {
             let shiftX = e.clientX - el.getBoundingClientRect().left;
             let shiftY = e.clientY - el.getBoundingClientRect().top;
@@ -264,58 +315,72 @@
 
                 el.style.left = x + 'px';
                 el.style.top = y + 'px';
-                el.dataset.x = x / gridSize;
-                el.dataset.y = y / gridSize;
+                data.x = x / gridSize;
+                data.y = y / gridSize;
             };
 
             document.onmouseup = () => {
                 document.onmousemove = null;
-                calculatePower();
+                calculateAtk();
+                saveGame();
             };
         };
 
+        // 右鍵賣掉已裝備的物品
+        el.oncontextmenu = (e) => {
+            e.preventDefault();
+            gameState.gold += Math.floor(data.price * 0.5);
+            el.remove();
+            gameState.bagItems = gameState.bagItems.filter(i => i.id !== data.id);
+            log(`回收裝備，獲得 ${Math.floor(data.price * 0.5)} 金幣。`);
+            updateUI();
+            saveGame();
+        };
+
         document.getElementById('backpack-grid').appendChild(el);
-        bagItems.push({ el, data });
-        calculatePower();
+        if (!isLoad) gameState.bagItems.push(data);
+        calculateAtk();
     }
 
-    function calculatePower() {
-        let total = 10;
-        // 先重置
-        bagItems.forEach(item => item.el.classList.remove('synergy'));
+    function calculateAtk() {
+        let base = 10;
+        let bonus = 0;
+        const items = document.querySelectorAll('.item');
+        items.forEach(el => el.classList.remove('synergy'));
 
-        // Synergy 邏輯：磨刀石加強鄰近武器
-        bagItems.forEach(item => {
-            let bonus = 0;
-            if (item.data.type === 'buff') {
-                bagItems.forEach(target => {
-                    if (target.data.type === 'weapon') {
-                        let dx = Math.abs(item.el.dataset.x - target.el.dataset.x);
-                        let dy = Math.abs(item.el.dataset.y - target.el.dataset.y);
-                        if (dx <= 1 && dy <= 1) { // 鄰近
-                            target.el.classList.add('synergy');
+        gameState.bagItems.forEach(item => {
+            base += item.atk;
+            // Synergy: 磨刀石 buff
+            if (item.type === 'buff') {
+                gameState.bagItems.forEach(target => {
+                    if (target.type === 'weapon' && target.id !== item.id) {
+                        const dist = Math.sqrt(Math.pow(item.x - target.x, 2) + Math.pow(item.y - target.y, 2));
+                        if (dist < 2) {
                             bonus += 5;
+                            // 找到對應 DOM 加上特效
+                            const targetEl = Array.from(items).find(e => e.innerText.includes(target.name));
+                            if (targetEl) targetEl.classList.add('synergy');
                         }
                     }
                 });
             }
-            if (item.data.atk) total += item.data.atk;
         });
-
-        // 計算被加成的武器
-        const synergies = document.querySelectorAll('.synergy').length;
-        total += (synergies * 5);
-
-        document.getElementById('total-atk').innerText = total;
+        
+        const total = base + bonus;
+        document.getElementById('atk-display').innerText = total;
         return total;
     }
 
-    function updateUI() {
-        document.getElementById('gold-val').innerText = gold;
-        document.getElementById('floor-val').innerText = floor;
+    function saveGame() {
+        localStorage.setItem('diablo_bag_save', JSON.stringify(gameState));
     }
 
-    updateUI();
+    function clearSave() {
+        if(confirm("確定要刪除所有進度嗎？")) {
+            localStorage.removeItem('diablo_bag_save');
+            location.reload();
+        }
+    }
 </script>
 </body>
 </html>

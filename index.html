@@ -2,51 +2,50 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>暗黑背包：煉獄整理術</title>
+    <title>暗黑背包：煉獄獵魔人</title>
     <style>
         :root {
             --bg: #050505;
-            --panel: #151515;
+            --panel: #1a1a1a;
             --gold: #d4af37;
-            --border: #333;
+            --rarity-legendary: #ff8000;
             --grid-size: 50px;
         }
 
         body {
             background: var(--bg);
             color: #eee;
-            font-family: 'Crimson Text', serif;
+            font-family: 'Segoe UI', sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             margin: 0;
-            overflow: hidden;
+            user-select: none;
         }
 
-        /* 頂部資訊 */
         #header {
             width: 100%;
-            padding: 10px;
+            padding: 15px;
             background: #000;
-            text-align: center;
             border-bottom: 2px solid var(--gold);
+            text-align: center;
         }
 
-        /* 主遊戲區域 */
-        #game-world {
+        #main-layout {
             display: flex;
             gap: 20px;
             padding: 20px;
-            height: 80vh;
+            max-width: 1200px;
         }
 
-        /* 背包區域：網格系統 */
-        #backpack-container {
+        /* 背包區域 */
+        .area-title { color: var(--gold); margin-bottom: 10px; font-weight: bold; }
+        
+        #backpack-grid {
+            width: 300px;
+            height: 400px;
             background: var(--panel);
             border: 3px solid #444;
-            display: grid;
-            grid-template-columns: repeat(6, var(--grid-size));
-            grid-template-rows: repeat(6, var(--grid-size));
             position: relative;
             background-image: 
                 linear-gradient(to right, #222 1px, transparent 1px),
@@ -54,215 +53,269 @@
             background-size: var(--grid-size) var(--grid-size);
         }
 
-        /* 裝備樣式 */
+        /* 裝備物件 */
         .item {
             position: absolute;
-            background: rgba(100, 50, 50, 0.8);
-            border: 2px solid #844;
-            cursor: grab;
+            border: 2px solid #555;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
-            text-align: center;
-            transition: transform 0.1s;
-            user-select: none;
+            font-size: 11px;
+            cursor: grab;
+            box-sizing: border-box;
+            background: rgba(40, 40, 40, 0.9);
+            z-index: 5;
         }
         .item:active { cursor: grabbing; z-index: 100; }
         .item.synergy { border-color: #0f0; box-shadow: 0 0 10px #0f0; }
-
-        /* 商店/掉落區 */
-        #shop {
+        
+        /* 掉落物區域 */
+        #loot-zone {
             width: 250px;
-            background: var(--panel);
-            border: 2px solid var(--border);
+            background: #0a0a0a;
+            border: 1px dashed #555;
             padding: 10px;
+            min-height: 400px;
         }
 
-        .shop-item {
+        .loot-card {
             background: #222;
-            margin: 10px 0;
-            padding: 10px;
-            border: 1px solid #555;
-            cursor: pointer;
+            border: 1px solid #444;
+            margin-bottom: 10px;
+            padding: 8px;
+            border-left: 4px solid #fff;
         }
-        .shop-item:hover { border-color: var(--gold); }
 
-        /* 戰鬥訊息 */
-        #battle-log {
+        /* 戰鬥與日誌 */
+        #battle-panel {
             width: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #log {
+            height: 300px;
             background: #000;
             border: 1px solid #333;
             padding: 10px;
-            font-size: 14px;
+            font-size: 13px;
             overflow-y: auto;
+            margin-top: 10px;
         }
 
         button {
-            background: #600;
-            color: white;
+            background: #400;
+            color: #fff;
             border: 1px solid var(--gold);
-            padding: 10px 20px;
-            font-size: 18px;
+            padding: 10px;
             cursor: pointer;
-            margin-top: 10px;
+            font-weight: bold;
         }
-        button:hover { background: #900; }
+        button:hover { background: #600; }
+
+        .sell-btn {
+            background: #224;
+            margin-top: 5px;
+            font-size: 10px;
+            padding: 2px 5px;
+        }
+
+        .rarity-common { border-left-color: #fff; }
+        .rarity-rare { border-left-color: #0070dd; color: #0070dd; }
+        .rarity-legendary { border-left-color: var(--rarity-legendary); color: var(--rarity-legendary); }
     </style>
 </head>
 <body>
 
 <div id="header">
-    <h1>暗黑背包：煉獄整理術</h1>
-    <div>金幣: <span id="gold-count">50</span> | 樓層: <span id="floor">1</span></div>
+    <h1>DIABLO BAG: HELL HUNTER</h1>
+    <div>金幣: <span id="gold-val" style="color:var(--gold)">100</span> | 當前層數: <span id="floor-val">1</span></div>
 </div>
 
-<div id="game-world">
+<div id="main-layout">
     <div>
-        <h3>你的背包 (拖動調整位置)</h3>
-        <div id="backpack-container"></div>
-        <button onclick="startBattle()">進入傳送門 (戰鬥)</button>
+        <div class="area-title">物品欄 (放置物品以獲得屬性)</div>
+        <div id="backpack-grid"></div>
+        <div style="margin-top:10px; font-size: 12px; color: #888;">提示: 把磨刀石放在武器旁有驚喜。</div>
     </div>
 
-    <div id="shop">
-        <h3>黑市商人</h3>
-        <div id="shop-list"></div>
-        <p style="font-size: 12px; color: #888;">* 購買後裝備會出現在左上角，請自行排列。</p>
+    <div id="battle-panel">
+        <div class="area-title">戰鬥資訊</div>
+        <div id="status">當前總攻擊力: <span id="total-atk">10</span></div>
+        <button onclick="fight()">前往下一層挑戰</button>
+        <div id="log"></div>
     </div>
 
-    <div id="battle-log">
-        <h3>戰鬥紀錄</h3>
-        <div id="logs"></div>
+    <div>
+        <div class="area-title">戰利品 (掉落區)</div>
+        <div id="loot-zone">
+            <p style="color:#666; text-align:center">擊敗怪物後<br>裝備會出現在此</p>
+        </div>
     </div>
 </div>
 
 <script>
-    let gold = 50;
+    let gold = 100;
     let floor = 1;
-    let itemsInBag = [];
+    let bagItems = [];
     const gridSize = 50;
 
-    // 裝備資料庫
-    const itemData = [
-        { name: "生鏽短劍", w: 1, h: 2, atk: 5, cost: 10, color: "#555", effect: "weapon" },
-        { name: "磨刀石", w: 1, h: 1, atk: 0, cost: 15, color: "#864", effect: "buff_atk" },
-        { name: "木盾", w: 2, h: 2, def: 10, cost: 20, color: "#454", effect: "armor" },
-        { name: "地獄火符", w: 1, h: 1, atk: 15, cost: 30, color: "#a40", effect: "weapon" }
+    // 裝備原型庫
+    const itemTemplates = [
+        { name: "短劍", w: 1, h: 2, atk: 5, color: "#333", type: "weapon" },
+        { name: "戰斧", w: 2, h: 2, atk: 12, color: "#422", type: "weapon" },
+        { name: "磨刀石", w: 1, h: 1, atk: 0, color: "#543", type: "buff" },
+        { name: "長矛", w: 1, h: 3, atk: 8, color: "#234", type: "weapon" },
+        { name: "匕首", w: 1, h: 1, atk: 3, color: "#222", type: "weapon" }
     ];
 
-    function initShop() {
-        const shopList = document.getElementById('shop-list');
-        shopList.innerHTML = '';
-        itemData.forEach(data => {
-            const div = document.createElement('div');
-            div.className = 'shop-item';
-            div.innerHTML = `<b>${data.name}</b> (${data.w}x${data.h})<br>價格: ${data.cost}金幣`;
-            div.onclick = () => buyItem(data);
-            shopList.appendChild(div);
-        });
+    function log(msg, color="#ccc") {
+        const l = document.getElementById('log');
+        l.innerHTML = `<div style="color:${color}">> ${msg}</div>` + l.innerHTML;
     }
 
-    function buyItem(data) {
-        if (gold >= data.cost) {
-            gold -= data.cost;
-            document.getElementById('gold-count').innerText = gold;
-            createBagItem(data);
+    // 戰鬥邏輯
+    function fight() {
+        const currentAtk = calculatePower();
+        const monsterHp = 20 + (floor * 15);
+        
+        log(`層數 ${floor}: 遭遇惡魔 (HP: ${monsterHp})`);
+        
+        if (currentAtk >= monsterHp) {
+            const reward = 10 + floor * 5;
+            gold += reward;
+            log(`勝利！獲得 ${reward} 金幣。`, "gold");
+            generateLoot();
+            floor++;
+            updateUI();
         } else {
-            alert("金幣不足！");
+            log(`失敗！攻擊力不足，撤退回城。`, "#ff4444");
         }
     }
 
-    function createBagItem(data) {
-        const itemEl = document.createElement('div');
-        itemEl.className = 'item';
-        itemEl.style.width = (data.w * gridSize - 4) + 'px';
-        itemEl.style.height = (data.h * gridSize - 4) + 'px';
-        itemEl.style.backgroundColor = data.color;
-        itemEl.innerHTML = `<span>${data.name}</span>`;
-        itemEl.dataset.x = 0;
-        itemEl.dataset.y = 0;
+    // 生成隨機裝備
+    function generateLoot() {
+        const lootZone = document.getElementById('loot-zone');
+        if (floor % 1 === 0) { // 每次勝利必掉
+            const temp = itemTemplates[Math.floor(Math.random() * itemTemplates.length)];
+            const rarityRoll = Math.random();
+            let rarity = "common";
+            let multiplier = 1;
+
+            if (rarityRoll > 0.9) { rarity = "legendary"; multiplier = 3; }
+            else if (rarityRoll > 0.7) { rarity = "rare"; multiplier = 1.8; }
+
+            const newItem = {
+                ...temp,
+                id: Date.now() + Math.random(),
+                atk: Math.floor(temp.atk * multiplier),
+                rarity: rarity,
+                price: Math.floor(10 * multiplier * (floor/2))
+            };
+
+            const card = document.createElement('div');
+            card.className = `loot-card rarity-${rarity}`;
+            card.innerHTML = `
+                <b>${newItem.name}</b> (${newItem.w}x${newItem.h})<br>
+                ATK: +${newItem.atk} | 價值: ${newItem.price}<br>
+                <button onclick="takeLoot('${encodeURIComponent(JSON.stringify(newItem))}', this)">放入背包</button>
+                <button class="sell-btn" onclick="sellLoot(${newItem.price}, this)">賣掉</button>
+            `;
+            lootZone.prepend(card);
+        }
+    }
+
+    function sellLoot(price, btn) {
+        gold += price;
+        btn.parentElement.remove();
+        updateUI();
+        log(`賣出裝備獲得了 ${price} 金幣。`);
+    }
+
+    function takeLoot(itemDataStr, btn) {
+        const data = JSON.parse(decodeURIComponent(itemDataStr));
+        btn.parentElement.remove();
+        createInBag(data);
+    }
+
+    function createInBag(data) {
+        const el = document.createElement('div');
+        el.className = 'item';
+        el.style.width = (data.w * gridSize - 4) + 'px';
+        el.style.height = (data.h * gridSize - 4) + 'px';
+        el.style.background = data.color;
+        if(data.rarity === 'legendary') el.style.boxShadow = "inset 0 0 10px #ff8000";
         
-        // 拖拽邏輯
-        let isDragging = false;
-        itemEl.onmousedown = (e) => {
-            isDragging = true;
-            let shiftX = e.clientX - itemEl.getBoundingClientRect().left;
-            let shiftY = e.clientY - itemEl.getBoundingClientRect().top;
-
-            function moveAt(pageX, pageY) {
-                let rect = document.getElementById('backpack-container').getBoundingClientRect();
-                let x = Math.round((pageX - rect.left - shiftX) / gridSize) * gridSize;
-                let y = Math.round((pageY - rect.top - shiftY) / gridSize) * gridSize;
+        el.innerHTML = `<span style="pointer-events:none">${data.name}<br>+${data.atk}</span>`;
+        
+        // 簡易拖拽
+        el.onmousedown = (e) => {
+            let shiftX = e.clientX - el.getBoundingClientRect().left;
+            let shiftY = e.clientY - el.getBoundingClientRect().top;
+            
+            document.onmousemove = (e) => {
+                let rect = document.getElementById('backpack-grid').getBoundingClientRect();
+                let x = Math.round((e.clientX - rect.left - shiftX) / gridSize) * gridSize;
+                let y = Math.round((e.clientY - rect.top - shiftY) / gridSize) * gridSize;
                 
-                // 限制邊界
-                x = Math.max(0, Math.min(x, (6 - data.w) * gridSize));
-                y = Math.max(0, Math.min(y, (6 - data.h) * gridSize));
+                x = Math.max(0, Math.min(x, 300 - data.w * gridSize));
+                y = Math.max(0, Math.min(y, 400 - data.h * gridSize));
 
-                itemEl.style.left = x + 'px';
-                itemEl.style.top = y + 'px';
-                itemEl.dataset.x = x / gridSize;
-                itemEl.dataset.y = y / gridSize;
-            }
+                el.style.left = x + 'px';
+                el.style.top = y + 'px';
+                el.dataset.x = x / gridSize;
+                el.dataset.y = y / gridSize;
+            };
 
-            document.onmousemove = (e) => moveAt(e.pageX, e.pageY);
             document.onmouseup = () => {
                 document.onmousemove = null;
-                isDragging = false;
-                checkSynergies();
+                calculatePower();
             };
         };
 
-        document.getElementById('backpack-container').appendChild(itemEl);
-        itemsInBag.push({ el: itemEl, data: data });
+        document.getElementById('backpack-grid').appendChild(el);
+        bagItems.push({ el, data });
+        calculatePower();
     }
 
-    function checkSynergies() {
-        // 簡單的連鎖檢測：如果磨刀石旁邊有武器，武器加成
-        itemsInBag.forEach(item => item.el.classList.remove('synergy'));
-        
-        itemsInBag.forEach(item => {
-            if (item.data.effect === 'buff_atk') {
-                itemsInBag.forEach(other => {
-                    if (other.data.effect === 'weapon') {
-                        // 檢測距離
-                        let dist = Math.abs(item.el.dataset.x - other.el.dataset.x) + Math.abs(item.el.dataset.y - other.el.dataset.y);
-                        if (dist <= 2) {
-                            other.el.classList.add('synergy');
+    function calculatePower() {
+        let total = 10;
+        // 先重置
+        bagItems.forEach(item => item.el.classList.remove('synergy'));
+
+        // Synergy 邏輯：磨刀石加強鄰近武器
+        bagItems.forEach(item => {
+            let bonus = 0;
+            if (item.data.type === 'buff') {
+                bagItems.forEach(target => {
+                    if (target.data.type === 'weapon') {
+                        let dx = Math.abs(item.el.dataset.x - target.el.dataset.x);
+                        let dy = Math.abs(item.el.dataset.y - target.el.dataset.y);
+                        if (dx <= 1 && dy <= 1) { // 鄰近
+                            target.el.classList.add('synergy');
+                            bonus += 5;
                         }
                     }
                 });
             }
-        });
-    }
-
-    function startBattle() {
-        const logs = document.getElementById('logs');
-        let totalAtk = 10;
-        
-        itemsInBag.forEach(item => {
-            let bonus = 0;
-            if (item.el.classList.contains('synergy')) bonus = 10;
-            if (item.data.atk) totalAtk += item.data.atk + bonus;
+            if (item.data.atk) total += item.data.atk;
         });
 
-        let mobHp = 30 + (floor * 20);
-        logs.innerHTML = `<div style="color:red">-- 進入第 ${floor} 層 --</div>` + logs.innerHTML;
-        
-        if (totalAtk >= mobHp) {
-            let winGold = 20 + floor * 5;
-            gold += winGold;
-            logs.innerHTML = `<div style="color:gold">擊敗惡魔！獲得 ${winGold} 金幣</div>` + logs.innerHTML;
-            floor++;
-        } else {
-            logs.innerHTML = `<div style="color:gray">攻擊力不足 (${totalAtk}/${mobHp})，撤退回城...</div>` + logs.innerHTML;
-        }
+        // 計算被加成的武器
+        const synergies = document.querySelectorAll('.synergy').length;
+        total += (synergies * 5);
 
-        document.getElementById('gold-count').innerText = gold;
-        document.getElementById('floor').innerText = floor;
+        document.getElementById('total-atk').innerText = total;
+        return total;
     }
 
-    initShop();
+    function updateUI() {
+        document.getElementById('gold-val').innerText = gold;
+        document.getElementById('floor-val').innerText = floor;
+    }
+
+    updateUI();
 </script>
 </body>
 </html>

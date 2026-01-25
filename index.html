@@ -2,385 +2,74 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>暗黑背包：終極煉獄版</title>
-    <style>
-        :root {
-            --bg: #0a0a0a;
-            --panel: #1a1a1a;
-            --gold: #d4af37;
-            --legendary: #ff8000;
-            --rare: #0070dd;
-            --grid-size: 50px;
-        }
-
-        body {
-            background: var(--bg);
-            color: #eee;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 0;
-            user-select: none;
-        }
-
-        #header {
-            width: 100%;
-            padding: 15px;
-            background: #000;
-            border-bottom: 2px solid var(--gold);
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-        }
-
-        #main-layout {
-            display: flex;
-            gap: 20px;
-            padding: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        /* 背包與網格 */
-        #backpack-grid {
-            width: 300px;
-            height: 400px;
-            background: #111;
-            border: 3px solid #444;
-            position: relative;
-            background-image: 
-                linear-gradient(to right, #222 1px, transparent 1px),
-                linear-gradient(to bottom, #222 1px, transparent 1px);
-            background-size: var(--grid-size) var(--grid-size);
-        }
-
-        /* 裝備物件 */
-        .item {
-            position: absolute;
-            border: 2px solid #555;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            cursor: grab;
-            background: rgba(40, 40, 40, 0.95);
-            z-index: 10;
-            text-align: center;
-            box-sizing: border-box;
-        }
-        .item.synergy { border-color: #0f0 !important; box-shadow: 0 0 15px #0f0; }
-
-        /* 面板與區塊 */
-        .panel {
-            background: var(--panel);
-            border: 1px solid #333;
-            padding: 15px;
-            border-radius: 4px;
-        }
-
-        #loot-zone, #shop-zone {
-            width: 280px;
-            min-height: 400px;
-            max-height: 600px;
-            overflow-y: auto;
-        }
-
-        .card {
-            background: #252525;
-            border: 1px solid #444;
-            margin-bottom: 10px;
-            padding: 10px;
-            position: relative;
-        }
-        .rarity-common { border-left: 4px solid #fff; }
-        .rarity-rare { border-left: 4px solid var(--rare); color: var(--rare); }
-        .rarity-legendary { border-left: 4px solid var(--legendary); color: var(--legendary); font-weight: bold; }
-
-        /* 按鈕樣式 */
-        button {
-            background: #4a0000;
-            color: white;
-            border: 1px solid var(--gold);
-            padding: 8px 12px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        button:hover { background: #7a0000; }
-        button.buy { background: #004a00; border-color: #0f0; }
-        button.reroll { background: #4a4a00; font-size: 12px; }
-
-        #log {
-            width: 300px;
-            height: 150px;
-            background: #000;
-            border: 1px solid #333;
-            padding: 10px;
-            font-size: 12px;
-            overflow-y: auto;
-            margin-top: 10px;
-            color: #aaa;
-        }
-
-        .stats-box { color: var(--gold); font-size: 1.2em; margin-bottom: 10px; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>經典競技場</title>
+    <link rel="stylesheet" href="style.css">
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
+    <div id="lobby" class="page">
+        <header>
+            <div id="user-info">
+                <img id="user-avatar" src="" alt="">
+                <span id="user-name">正在準備入場...</span>
+            </div>
+            <h1>經典競技場</h1>
+        </header>
 
-<div id="header">
-    <h1>DIABLO BAG: ETERNAL HUNTER</h1>
-    <div>
-        金幣: <span id="gold-display" style="color:var(--gold); font-size: 1.5em;">0</span> 
-        | 樓層: <span id="floor-display">1</span>
-        <button onclick="saveGame()" style="margin-left: 20px; background: #222;">手動存檔</button>
-        <button onclick="clearSave()" style="background: #222;">重置進度</button>
+        <section id="announcement">
+            <p>📢 歡迎！今日挑戰已更新，祝您奪魁。</p>
+        </section>
+
+        <main class="game-grid">
+            <div class="game-card" onclick="GameApp.loadGame('sudoku')">
+                <div class="icon">🧩</div>
+                <div class="info">
+                    <h2>九宮格神算</h2>
+                    <p class="stats">👥 已有 <span id="sudoku-players">0</span> 人挑戰</p>
+                    <p class="top-record">👑 <span id="sudoku-top">載入中...</span></p>
+                </div>
+            </div>
+
+            <div class="game-card" onclick="GameApp.loadGame('solitaire')">
+                <div class="icon">🃏</div>
+                <div class="info">
+                    <h2>經典疊牌</h2>
+                    <p class="stats">👥 已有 <span id="solitaire-players">0</span> 人挑戰</p>
+                    <p class="top-record">👑 <span id="solitaire-top">載入中...</span></p>
+                </div>
+            </div>
+
+            <div class="game-card locked">
+                <div class="icon">♟️</div>
+                <div class="info">
+                    <h2>即將推出</h2>
+                    <p>更多經典項目敬請期待</p>
+                </div>
+            </div>
+        </main>
     </div>
-</div>
 
-<div id="main-layout">
-    <div class="panel">
-        <h3 style="color:var(--gold)">黑市商人</h3>
-        <button class="reroll" onclick="refreshShop()">花費 10G 刷新貨架</button>
-        <div id="shop-zone"></div>
+    <div id="game-container" class="page hidden">
+        <div id="game-nav">
+            <button class="nav-btn" onclick="GameApp.backToLobby()">⬅ 離開</button>
+            <div id="game-timer">00:00</div>
+            <button id="pause-btn" class="nav-btn">⏸ 暫停</button>
+        </div>
+        
+        <div id="game-stage"></div>
+
+        <div id="pause-overlay" class="hidden">
+            <div class="overlay-content">
+                <h2>比賽暫停中</h2>
+                <p>畫面已遮蓋以確保競技公平</p>
+                <button id="resume-btn">繼續挑戰</button>
+            </div>
+        </div>
     </div>
 
-    <div>
-        <div class="stats-box">總戰力: <span id="atk-display">10</span></div>
-        <div id="backpack-grid"></div>
-        <div id="log"></div>
-        <button onclick="startBattle()" style="width:100%; height:50px; font-size: 20px; margin-top:10px;">進入傳送門戰鬥</button>
-    </div>
-
-    <div class="panel">
-        <h3 style="color:var(--gold)">戰利品掉落區</h3>
-        <div id="loot-zone"></div>
-    </div>
-</div>
-
-<script>
-    // 遊戲狀態
-    let gameState = {
-        gold: 100,
-        floor: 1,
-        bagItems: []
-    };
-
-    const gridSize = 50;
-    const itemTemplates = [
-        { name: "短劍", w: 1, h: 2, atk: 5, color: "#444", type: "weapon" },
-        { name: "戰斧", w: 2, h: 2, atk: 12, color: "#522", type: "weapon" },
-        { name: "磨刀石", w: 1, h: 1, atk: 0, color: "#543", type: "buff" },
-        { name: "長矛", w: 1, h: 3, atk: 8, color: "#234", type: "weapon" },
-        { name: "木盾", w: 2, h: 2, atk: 2, color: "#343", type: "weapon" }
-    ];
-
-    // 初始化與存檔加載
-    window.onload = () => {
-        const saved = localStorage.getItem('diablo_bag_save');
-        if (saved) {
-            const data = JSON.parse(saved);
-            gameState.gold = data.gold;
-            gameState.floor = data.floor;
-            // 重新渲染背包
-            data.bagItems.forEach(item => createInBag(item, true));
-        }
-        refreshShop();
-        updateUI();
-        log("歡迎回到煉獄。整理你的背包，然後開始戰鬥。");
-    };
-
-    function log(msg, color="#aaa") {
-        const logBox = document.getElementById('log');
-        logBox.innerHTML = `<div style="color:${color}">> ${msg}</div>` + logBox.innerHTML;
-    }
-
-    function updateUI() {
-        document.getElementById('gold-display').innerText = gameState.gold;
-        document.getElementById('floor-display').innerText = gameState.floor;
-        calculateAtk();
-    }
-
-    // 戰鬥邏輯
-    function startBattle() {
-        const power = calculateAtk();
-        const monsterHp = 15 + (gameState.floor * 12);
-        
-        log(`挑戰第 ${gameState.floor} 層守衛 (HP: ${monsterHp})...`);
-        
-        if (power >= monsterHp) {
-            const winGold = 15 + (gameState.floor * 5);
-            gameState.gold += winGold;
-            log(`擊殺成功！獲得 ${winGold} 金幣。`, "gold");
-            generateLoot();
-            gameState.floor++;
-        } else {
-            log(`戰力不足！你被打成重傷，退回城鎮休息。`, "#ff4444");
-        }
-        updateUI();
-        saveGame();
-    }
-
-    // 掉落與商店生成
-    function generateItemData(isShop = false) {
-        const base = itemTemplates[Math.floor(Math.random() * itemTemplates.length)];
-        const roll = Math.random();
-        let rarity = "common";
-        let mult = 1;
-
-        if (roll > 0.92) { rarity = "legendary"; mult = 3; }
-        else if (roll > 0.75) { rarity = "rare"; mult = 1.7; }
-
-        const levelMult = 1 + (gameState.floor * 0.1);
-        return {
-            ...base,
-            id: Math.random().toString(36).substr(2, 9),
-            atk: Math.floor(base.atk * mult * levelMult),
-            rarity: rarity,
-            price: Math.floor((isShop ? 30 : 10) * mult * levelMult),
-            x: 0, y: 0
-        };
-    }
-
-    function generateLoot() {
-        const zone = document.getElementById('loot-zone');
-        const item = generateItemData(false);
-        renderCard(zone, item, "撿取", "賣掉");
-    }
-
-    function refreshShop() {
-        if (gameState.gold < 10) return;
-        if (event) gameState.gold -= 10;
-        const zone = document.getElementById('shop-zone');
-        zone.innerHTML = "";
-        for(let i=0; i<3; i++) {
-            renderCard(zone, generateItemData(true), "購買", "無視");
-        }
-        updateUI();
-    }
-
-    function renderCard(parent, item, actionName, discardName) {
-        const div = document.createElement('div');
-        div.className = `card rarity-${item.rarity}`;
-        div.innerHTML = `
-            <strong>${item.name}</strong> [${item.w}x${item.h}]<br>
-            攻擊力: +${item.atk}<br>
-            價格: ${item.price} G<br>
-            <button class="buy" onclick="handleAction('${actionName}', ${JSON.stringify(item).replace(/"/g, '&quot;')}, this)">${actionName}</button>
-            <button onclick="handleAction('${discardName}', ${JSON.stringify(item).replace(/"/g, '&quot;')}, this)">${discardName}</button>
-        `;
-        parent.prepend(div);
-    }
-
-    function handleAction(action, item, btn) {
-        if (action === "購買") {
-            if (gameState.gold >= item.price) {
-                gameState.gold -= item.price;
-                createInBag(item);
-            } else { log("金幣不足！", "red"); return; }
-        } else if (action === "撿取") {
-            createInBag(item);
-        } else if (action === "賣掉") {
-            gameState.gold += item.price;
-            log(`賣掉裝備，換得 ${item.price} 金幣。`);
-        }
-        btn.parentElement.remove();
-        updateUI();
-    }
-
-    // 背包核心功能
-    function createInBag(data, isLoad = false) {
-        const el = document.createElement('div');
-        el.className = 'item';
-        el.style.width = (data.w * gridSize - 4) + 'px';
-        el.style.height = (data.h * gridSize - 4) + 'px';
-        el.style.backgroundColor = data.color;
-        if(data.rarity === 'legendary') el.style.border = "2px solid var(--legendary)";
-        if(data.rarity === 'rare') el.style.border = "2px solid var(--rare)";
-        
-        el.innerHTML = `<b>${data.name}</b><br>+${data.atk}`;
-        el.style.left = (data.x * gridSize) + 'px';
-        el.style.top = (data.y * gridSize) + 'px';
-
-        el.onmousedown = (e) => {
-            let shiftX = e.clientX - el.getBoundingClientRect().left;
-            let shiftY = e.clientY - el.getBoundingClientRect().top;
-            
-            document.onmousemove = (e) => {
-                let rect = document.getElementById('backpack-grid').getBoundingClientRect();
-                let x = Math.round((e.clientX - rect.left - shiftX) / gridSize) * gridSize;
-                let y = Math.round((e.clientY - rect.top - shiftY) / gridSize) * gridSize;
-                
-                x = Math.max(0, Math.min(x, 300 - data.w * gridSize));
-                y = Math.max(0, Math.min(y, 400 - data.h * gridSize));
-
-                el.style.left = x + 'px';
-                el.style.top = y + 'px';
-                data.x = x / gridSize;
-                data.y = y / gridSize;
-            };
-
-            document.onmouseup = () => {
-                document.onmousemove = null;
-                calculateAtk();
-                saveGame();
-            };
-        };
-
-        // 右鍵賣掉已裝備的物品
-        el.oncontextmenu = (e) => {
-            e.preventDefault();
-            gameState.gold += Math.floor(data.price * 0.5);
-            el.remove();
-            gameState.bagItems = gameState.bagItems.filter(i => i.id !== data.id);
-            log(`回收裝備，獲得 ${Math.floor(data.price * 0.5)} 金幣。`);
-            updateUI();
-            saveGame();
-        };
-
-        document.getElementById('backpack-grid').appendChild(el);
-        if (!isLoad) gameState.bagItems.push(data);
-        calculateAtk();
-    }
-
-    function calculateAtk() {
-        let base = 10;
-        let bonus = 0;
-        const items = document.querySelectorAll('.item');
-        items.forEach(el => el.classList.remove('synergy'));
-
-        gameState.bagItems.forEach(item => {
-            base += item.atk;
-            // Synergy: 磨刀石 buff
-            if (item.type === 'buff') {
-                gameState.bagItems.forEach(target => {
-                    if (target.type === 'weapon' && target.id !== item.id) {
-                        const dist = Math.sqrt(Math.pow(item.x - target.x, 2) + Math.pow(item.y - target.y, 2));
-                        if (dist < 2) {
-                            bonus += 5;
-                            // 找到對應 DOM 加上特效
-                            const targetEl = Array.from(items).find(e => e.innerText.includes(target.name));
-                            if (targetEl) targetEl.classList.add('synergy');
-                        }
-                    }
-                });
-            }
-        });
-        
-        const total = base + bonus;
-        document.getElementById('atk-display').innerText = total;
-        return total;
-    }
-
-    function saveGame() {
-        localStorage.setItem('diablo_bag_save', JSON.stringify(gameState));
-    }
-
-    function clearSave() {
-        if(confirm("確定要刪除所有進度嗎？")) {
-            localStorage.removeItem('diablo_bag_save');
-            location.reload();
-        }
-    }
-</script>
+    <script src="js/auth.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>

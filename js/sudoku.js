@@ -8,12 +8,18 @@ const Sudoku = {
     solution: [],
     difficulty: 35,
 
-    init(holeCount) {
+// 替換 js/sudoku.js 中的 init
+    init(holeCount, seed, savedState = null) {
         this.difficulty = holeCount;
-        this.generateDailyGame();
+        this.generateDailyGame(seed);
+        
+        // 如果有傳入中局盤面，則覆蓋現有盤面
+        if (savedState && savedState.length === 81) {
+            this.grid = savedState.split('').map(n => parseInt(n));
+        }
+        
         this.renderBoard();
     },
-
     // 根據日期生成每日固定題目 (確保全台玩家題目相同)
     generateDailyGame() {
         const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');

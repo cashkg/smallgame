@@ -13,30 +13,29 @@
         <header class="top-bar">
             <div class="user-profile">
                 <div class="avatar-wrapper">
-                    <img id="user-avatar" src="assets/guest-avatar.png" alt="User">
+                    <img id="user-avatar" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="User">
                 </div>
                 <div class="user-meta">
                     <span id="user-name">訪客玩家</span>
-                    <button id="login-trigger" class="btn-text" onclick="Auth.manualLogin()">登入排行榜</button>
+                    <button id="login-trigger" class="btn-text" onclick="Auth.manualLogin()">點此登入</button>
                 </div>
             </div>
-            <h1 class="logo">經典競技場</h1>
+            <h1 class="logo-text">經典競技場</h1>
         </header>
 
         <main class="lobby-content">
             <div class="stat-banner">
-                <p>📢 今日共有 <span id="total-players">0</span> 位高手在線競技</p>
+                <p>今日競技人數：<span id="total-players">0</span></p>
             </div>
 
             <div class="game-grid">
                 <div class="game-card" onclick="GameApp.goToSetup('sudoku')">
                     <div class="card-icon">🧩</div>
                     <div class="card-body">
-                        <h2>九宮格神算</h2>
-                        <p class="card-desc">考驗邏輯與速度的極限</p>
+                        <h2>數獨</h2>
                         <div class="card-stats">
-                            <span>🔥 今日挑戰：<b id="sudoku-count">0</b> 人</span>
-                            <span>👑 榜首：<b id="sudoku-top">-</b></span>
+                            <span>今日：<b id="sudoku-count">0</b> 人</span>
+                            <span>榜首：<b id="sudoku-top">-</b></span>
                         </div>
                     </div>
                 </div>
@@ -44,11 +43,10 @@
                 <div class="game-card" onclick="GameApp.goToSetup('solitaire')">
                     <div class="card-icon">🃏</div>
                     <div class="card-body">
-                        <h2>經典疊牌</h2>
-                        <p class="card-desc">重溫指尖上的紙牌藝術</p>
+                        <h2>接龍</h2>
                         <div class="card-stats">
-                            <span>🔥 今日挑戰：<b id="solitaire-count">0</b> 人</span>
-                            <span>👑 榜首：<b id="solitaire-top">-</b></span>
+                            <span>今日：<b id="solitaire-count">0</b> 人</span>
+                            <span>榜首：<b id="solitaire-top">-</b></span>
                         </div>
                     </div>
                 </div>
@@ -57,6 +55,7 @@
     </section>
 
     <section id="setup-page" class="page hidden"></section>
+    
     <section id="gameplay-page" class="page hidden"></section>
 
     <script src="js/auth.js"></script>

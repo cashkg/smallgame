@@ -8,65 +8,56 @@
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
-    <div id="lobby" class="page">
-        <header>
-            <div id="user-info">
-                <img id="user-avatar" src="" alt="">
-                <span id="user-name">正在準備入場...</span>
+
+    <section id="lobby-page" class="page">
+        <header class="top-bar">
+            <div class="user-profile">
+                <div class="avatar-wrapper">
+                    <img id="user-avatar" src="assets/guest-avatar.png" alt="User">
+                </div>
+                <div class="user-meta">
+                    <span id="user-name">訪客玩家</span>
+                    <button id="login-trigger" class="btn-text" onclick="Auth.manualLogin()">登入排行榜</button>
+                </div>
             </div>
-            <h1>經典競技場</h1>
+            <h1 class="logo">經典競技場</h1>
         </header>
 
-        <section id="announcement">
-            <p>📢 歡迎！今日挑戰已更新，祝您奪魁。</p>
-        </section>
-
-        <main class="game-grid">
-            <div class="game-card" onclick="GameApp.loadGame('sudoku')">
-                <div class="icon">🧩</div>
-                <div class="info">
-                    <h2>九宮格神算</h2>
-                    <p class="stats">👥 已有 <span id="sudoku-players">0</span> 人挑戰</p>
-                    <p class="top-record">👑 <span id="sudoku-top">載入中...</span></p>
-                </div>
+        <main class="lobby-content">
+            <div class="stat-banner">
+                <p>📢 今日共有 <span id="total-players">0</span> 位高手在線競技</p>
             </div>
 
-            <div class="game-card" onclick="GameApp.loadGame('solitaire')">
-                <div class="icon">🃏</div>
-                <div class="info">
-                    <h2>經典疊牌</h2>
-                    <p class="stats">👥 已有 <span id="solitaire-players">0</span> 人挑戰</p>
-                    <p class="top-record">👑 <span id="solitaire-top">載入中...</span></p>
+            <div class="game-grid">
+                <div class="game-card" onclick="GameApp.goToSetup('sudoku')">
+                    <div class="card-icon">🧩</div>
+                    <div class="card-body">
+                        <h2>九宮格神算</h2>
+                        <p class="card-desc">考驗邏輯與速度的極限</p>
+                        <div class="card-stats">
+                            <span>🔥 今日挑戰：<b id="sudoku-count">0</b> 人</span>
+                            <span>👑 榜首：<b id="sudoku-top">-</b></span>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="game-card locked">
-                <div class="icon">♟️</div>
-                <div class="info">
-                    <h2>即將推出</h2>
-                    <p>更多經典項目敬請期待</p>
+                <div class="game-card" onclick="GameApp.goToSetup('solitaire')">
+                    <div class="card-icon">🃏</div>
+                    <div class="card-body">
+                        <h2>經典疊牌</h2>
+                        <p class="card-desc">重溫指尖上的紙牌藝術</p>
+                        <div class="card-stats">
+                            <span>🔥 今日挑戰：<b id="solitaire-count">0</b> 人</span>
+                            <span>👑 榜首：<b id="solitaire-top">-</b></span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
-    </div>
+    </section>
 
-    <div id="game-container" class="page hidden">
-        <div id="game-nav">
-            <button class="nav-btn" onclick="GameApp.backToLobby()">⬅ 離開</button>
-            <div id="game-timer">00:00</div>
-            <button id="pause-btn" class="nav-btn">⏸ 暫停</button>
-        </div>
-        
-        <div id="game-stage"></div>
-
-        <div id="pause-overlay" class="hidden">
-            <div class="overlay-content">
-                <h2>比賽暫停中</h2>
-                <p>畫面已遮蓋以確保競技公平</p>
-                <button id="resume-btn">繼續挑戰</button>
-            </div>
-        </div>
-    </div>
+    <section id="setup-page" class="page hidden"></section>
+    <section id="gameplay-page" class="page hidden"></section>
 
     <script src="js/auth.js"></script>
     <script src="js/ui.js"></script>

@@ -4,14 +4,14 @@ const Sudoku = {
     difficulty: 50,
 
     init(holeCount, seed, savedState = null) {
-        this.difficulty = parseInt(holeCount);
+        this.difficulty = parseInt(holeCount) || 50;
         this.generateGame(seed);
         if (savedState) this.grid = savedState.split('').map(n => parseInt(n));
         this.renderBoard();
     },
 
     generateGame(seed) {
-        // 固定的數獨終局模板
+        // 基礎數獨盤面
         const base = [
             1,2,3,4,5,6,7,8,9, 4,5,6,7,8,9,1,2,3, 7,8,9,1,2,3,4,5,6,
             2,3,1,5,6,4,8,9,7, 5,6,4,8,9,7,2,3,1, 8,9,7,2,3,1,5,6,4,
@@ -20,19 +20,25 @@ const Sudoku = {
         this.solution = [...base];
         this.grid = [...base];
         
-        // 依據種子挖空
+        // 使用日期種子進行挖空 (確保全台每日同題)
         let count = 0;
         let s = parseInt(seed);
         while (count < this.difficulty) {
             s = (s * 9301 + 49297) % 233280;
             let pos = Math.floor((s / 233280) * 81);
-            if (this.grid[pos] !== 0) { this.grid[pos] = 0; count++; }
+            if (this.grid[pos] !== 0) {
+                this.grid[pos] = 0;
+                count++;
+            }
         }
     },
 
     renderBoard() {
         const stage = document.getElementById('game-stage');
-        stage.innerHTML = '<div class="sudoku-board"></div>';
+        stage.innerHTML = `
+            <div class="game-info">難度: ${this.difficulty} 格挖空</div>
+            <div class="sudoku-board"></div>
+        `;
         const board = stage.querySelector('.sudoku-board');
 
         for (let i = 0; i < 81; i++) {
@@ -58,6 +64,7 @@ const Sudoku = {
     checkWin() {
         if (this.grid.every((v, i) => v === this.solution[i])) {
             GameApp.stopTimer();
+            // 巔峰賽計分公式
             const score = Math.floor((Math.pow(this.difficulty, 2.5) * 100) / GameApp.seconds);
             GameApp.uploadScore('sudoku', this.difficulty, score, GameApp.seconds);
             UI.showResult('sudoku', this.difficulty, GameApp.seconds, score);

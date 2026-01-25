@@ -1,152 +1,37 @@
-:root {
-    --gold: #d4af37;
-    --bg-dark: #1a1a1a;
-    --card-bg: #2c2c2e;
-    --text-gray: #aaaaaa;
-}
-
-* { box-sizing: border-box; }
-
-body {
-    margin: 0;
-    padding: 0;
-    background-color: var(--bg-dark);
-    font-family: -apple-system, "微軟正黑體", sans-serif;
-    color: white;
-    overflow: hidden;
-    user-select: none;
-}
-
-.page {
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-.hidden { display: none !important; }
-
-/* 頂部導航列 */
-.top-bar {
-    padding: 10px 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #222;
-    border-bottom: 1px solid #333;
-}
-
-/* 用戶區塊 */
+/* 頂部導航列與用戶資訊 */
 .user-profile {
     display: flex;
     align-items: center;
     gap: 8px;
-    min-width: 100px;
 }
 
-.avatar-wrapper {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 1px solid var(--gold);
-    overflow: hidden;
-    background: #333;
-}
-
-#user-avatar {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.user-meta {
+.auth-links {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    flex-direction: column; /* 讓按鈕垂直排列在名字下面 */
 }
-
-#user-name {
-    font-size: 13px;
-    font-weight: bold;
-    max-width: 80px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.auth-links { display: flex; gap: 5px; }
 
 .btn-text {
-    font-size: 10px;
-    color: var(--gold);
+    font-size: 11px;
     background: none;
     border: none;
     padding: 0;
     text-decoration: underline;
     cursor: pointer;
+    text-align: left;
 }
 
-/* 標題與按鈕 */
-.logo-text { font-size: 16px; color: var(--gold); margin: 0; font-weight: 800; }
-
-.icon-btn {
-    background: none;
-    border: none;
-    color: var(--text-gray);
-    padding: 5px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
+/* 登入鈕顏色：金金色 */
+#login-btn {
+    color: var(--gold);
 }
 
-.icon-btn:active { color: var(--gold); }
-
-/* 大廳內容 */
-.lobby-content {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
+/* 登出鈕顏色：明顯的淡紅色，確保看得見 */
+#logout-btn {
+    color: #ff6b6b;
+    display: none; /* 預設隱藏，由 JS 控制 */
 }
 
-.stat-banner {
-    background: #333;
-    padding: 10px;
-    border-radius: 10px;
-    text-align: center;
-    font-size: 13px;
-    margin-bottom: 25px;
-    border: 1px solid #444;
+/* 修正隱藏類別 */
+.hidden {
+    display: none !important;
 }
-
-.stat-banner b { color: var(--gold); }
-
-/* 遊戲入口卡片 */
-.game-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-}
-
-.game-card {
-    background: var(--card-bg);
-    border-radius: 15px;
-    padding: 20px 10px;
-    text-align: center;
-    border: 1px solid #444;
-    transition: transform 0.1s;
-}
-
-.game-card:active { transform: scale(0.95); background: #3a3a3c; }
-
-.card-icon { font-size: 32px; margin-bottom: 10px; }
-.game-card h2 { font-size: 18px; margin: 0 0 10px 0; color: #fff; }
-
-.card-stats {
-    font-size: 11px;
-    color: var(--text-gray);
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.card-stats b { color: #eee; }

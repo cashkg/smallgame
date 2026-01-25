@@ -1,30 +1,44 @@
-/* 遊戲內容樣式 */
-.game-info { text-align: center; padding: 10px; color: var(--gold); font-weight: bold; }
-
-.sudoku-board {
-    display: grid;
-    grid-template-columns: repeat(9, 1fr);
-    width: 90vw;
-    max-width: 400px;
-    margin: 10px auto;
-    border: 2px solid var(--gold);
+/* 修正頭像尺寸 */
+.avatar-wrapper {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #333;
+    border: 1px solid var(--gold);
 }
 
-.sudoku-cell {
-    aspect-ratio: 1;
-    border: 0.5px solid #444;
+#user-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 用戶資訊排版 */
+.user-profile {
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    font-weight: bold;
-    color: var(--gold);
+    gap: 10px;
 }
 
-.sudoku-cell.fixed { background: #2c2c2e; color: #fff; }
+.user-meta {
+    display: flex;
+    flex-direction: column;
+    font-size: 12px;
+}
 
-/* 3x3 粗線區隔 */
-.sudoku-cell:nth-child(3n) { border-right: 2px solid var(--gold); }
-.sudoku-cell:nth-child(9n) { border-right: 0.5px solid #444; }
-.sudoku-cell:nth-child(n+19):nth-child(-n+27),
-.sudoku-cell:nth-child(n+46):nth-child(-n+54) { border-bottom: 2px solid var(--gold); }
+#user-name {
+    font-weight: bold;
+    color: #fff;
+}
+
+.btn-text {
+    background: none;
+    border: none;
+    color: var(--gold);
+    padding: 0;
+    text-align: left;
+    text-decoration: underline;
+    font-size: 11px;
+    cursor: pointer;
+}

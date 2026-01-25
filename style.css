@@ -48,3 +48,28 @@ header { padding: 20px; text-align: center; }
     display: flex; justify-content: center; align-items: center; text-align: center;
 }
 #resume-btn { background: var(--gold); color: black; font-size: 20px; padding: 15px 40px; border-radius: 10px; border: none; margin-top: 20px; }
+/* 數獨棋盤樣式 */
+.sudoku-board {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    width: 95vw;
+    max-width: 400px;
+    margin: 20px auto;
+    border: 2px solid var(--gold);
+}
+.sudoku-cell {
+    aspect-ratio: 1;
+    border: 1px solid #444;
+    text-align: center;
+    line-height: 2.5;
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--gold);
+}
+.sudoku-cell.fixed { background: #2c2c2e; color: #fff; }
+.sudoku-cell[contenteditable="true"]:focus { background: #333; outline: none; }
+
+/* 粗線格 (3x3 分隔) */
+.sudoku-cell:nth-child(3n) { border-right: 2px solid var(--gold); }
+.sudoku-cell:nth-child(n+19):nth-child(-n+27),
+.sudoku-cell:nth-child(n+46):nth-child(-n+54) { border-bottom: 2px solid var(--gold); }

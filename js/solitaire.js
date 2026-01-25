@@ -1,71 +1,75 @@
+/**
+ * 疊牌接龍模組 (js/solitaire.js)
+ * 支援翻 1 張 / 翻 3 張模式，比拼「步數」與「時間」
+ */
+
 const Solitaire = {
-    deck: [],
-    tableau: [[], [], [], [], [], [], []],
     steps: 0,
-    mode: 'draw3', // 預設翻三張
+    mode: 'draw3',
+    cards: [],
 
     init(mode) {
         this.mode = mode;
         this.steps = 0;
-        this.generateDeck();
-        this.shuffleDeck();
-        this.deal();
-        this.render();
-        console.log(`接龍啟動：${mode}模式`);
+        this.setupGame();
+        console.log(`接龍初始化：${mode}`);
     },
 
-    // 產生 52 張牌 (每日種子同步)
-    generateDeck() {
-        const suits = ['heart', 'diamond', 'club', 'spade'];
-        const values = ['A', 2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K'];
-        this.deck = [];
-        suits.forEach(s => values.forEach(v => this.deck.push({suit: s, value: v})));
+    setupGame() {
+        const stage = document.getElementById('game-stage');
+        stage.innerHTML = `
+            <div class="solitaire-info">模式: ${this.mode === 'draw1' ? '翻1張' : '翻3張'} | 步數: <span id="step-count">0</span></div>
+            <div class="solitaire-board" id="solitaire-board">
+                <p style="text-align:center; padding:20px;">牌組生成中...</p>
+            </div>
+        `;
+        
+        this.generateDailyDeck();
     },
 
-    shuffleDeck() {
-        // 使用日期種子確保今日題目一致
-        const dateSeed = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        let seed = parseInt(dateSeed);
-        for (let i = this.deck.length - 1; i > 0; i--) {
+    generateDailyDeck() {
+        const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        let seed = parseInt(today);
+        
+        // 生成 52 張牌
+        let deck = [];
+        const suits = ['♥','♦','♣','♠'];
+        const nums = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+        suits.forEach(s => nums.forEach(n => deck.push({s, n})));
+
+        // 洗牌 (種子隨機)
+        for (let i = deck.length - 1; i > 0; i--) {
             seed = (seed * 9301 + 49297) % 233280;
             let j = Math.floor((seed / 233280) * (i + 1));
-            [this.deck[i], this.deck[j]] = [this.deck[j], this.deck[i]];
+            [deck[i], deck[j]] = [deck[j], deck[i]];
         }
+        this.cards = deck;
+        this.renderCards();
     },
 
-    deal() {
-        // 經典接龍 7 疊牌區發牌邏輯
-        for (let i = 0; i < 7; i++) {
-            for (let j = i; j < 7; j++) {
-                this.tableau[j].push(this.deck.pop());
-            }
-        }
-    },
-
-    moveCard(from, to) {
-        // 每移動一次就增加步數，這是天梯排行的依據
+    // 每執行一次移動動作，呼叫此函式記錄步數
+    recordStep() {
         this.steps++;
-        console.log(`目前步數: ${this.steps}`);
-        this.checkWin();
+        const countEl = document.getElementById('step-count');
+        if (countEl) countEl.innerText = this.steps;
+    },
+
+    renderCards() {
+        // 此處對接視覺渲染邏輯 (HTML/CSS 牌面)
+        document.getElementById('solitaire-board').innerHTML = `
+            <div class="placeholder">每日牌組已就緒，請開始移動卡片...</div>
+        `;
     },
 
     calculateScore() {
-        // 積分公式：(難度係數 / (時間 + 步數 * 0.5))
-        const difficultyFactor = (this.mode === 'draw3') ? 20000 : 10000;
-        return Math.floor(difficultyFactor / (GameApp.seconds + this.steps * 0.5));
+        const modeBonus = this.mode === 'draw3' ? 5000 : 2000;
+        // 積分 = (難度獎勵 * 100) / (耗時 + 步數 * 0.5)
+        return Math.floor((modeBonus * 100) / (GameApp.seconds + this.steps * 0.5));
     },
 
-    checkWin() {
-        // 獲勝判斷與上傳戰績
-        if (false) { // 這裡實作勝利條件
-            GameApp.stopTimer();
-            const score = this.calculateScore();
-            UI.showResult('solitaire', this.mode, GameApp.seconds, score);
-        }
-    },
-
-    render() {
-        const stage = document.getElementById('game-stage');
-        stage.innerHTML = '<div class="solitaire-board">接龍介面建置中...</div>';
+    onWin() {
+        GameApp.stopTimer();
+        const score = this.calculateScore();
+        UI.showResult('solitaire', this.mode, GameApp.seconds, score);
     }
 };

@@ -1,65 +1,32 @@
-/**
- * 數獨競技模組 (js/sudoku.js)
- * 支援 35/42/49 格固定難度與 50-64 格極限自選
- */
-
 const Sudoku = {
     grid: [],
     solution: [],
-    difficulty: 35,
+    difficulty: 50,
 
-// 替換 js/sudoku.js 中的 init
     init(holeCount, seed, savedState = null) {
-        this.difficulty = holeCount;
-        this.generateDailyGame(seed);
-        
-        // 如果有傳入中局盤面，則覆蓋現有盤面
-        if (savedState && savedState.length === 81) {
-            this.grid = savedState.split('').map(n => parseInt(n));
-        }
-        
+        this.difficulty = parseInt(holeCount);
+        this.generateGame(seed);
+        if (savedState) this.grid = savedState.split('').map(n => parseInt(n));
         this.renderBoard();
     },
-    // 根據日期生成每日固定題目 (確保全台玩家題目相同)
-    generateDailyGame() {
-        const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        const seed = parseInt(today);
-        
-        // 生成完整終局 (簡化示意，實際會包含 Backtracking 生成)
-        this.solution = this.generateCompleteBoard(seed);
-        this.grid = [...this.solution];
-        
-        // 依照難度執行挖空 (個位數為單位)
-        this.digHoles(seed);
-    },
 
-    generateCompleteBoard(seed) {
-        // 基礎數獨數組
-        let board = [
-            1,2,3,4,5,6,7,8,9,
-            4,5,6,7,8,9,1,2,3,
-            7,8,9,1,2,3,4,5,6,
-            2,3,1,5,6,4,8,9,7,
-            5,6,4,8,9,7,2,3,1,
-            8,9,7,2,3,1,5,6,4,
-            3,1,2,6,4,5,9,7,8,
-            6,4,5,9,7,8,3,1,2,
-            9,7,8,3,1,2,6,4,5
+    generateGame(seed) {
+        // 固定的數獨終局模板
+        const base = [
+            1,2,3,4,5,6,7,8,9, 4,5,6,7,8,9,1,2,3, 7,8,9,1,2,3,4,5,6,
+            2,3,1,5,6,4,8,9,7, 5,6,4,8,9,7,2,3,1, 8,9,7,2,3,1,5,6,4,
+            3,1,2,6,4,5,9,7,8, 6,4,5,9,7,8,3,1,2, 9,7,8,3,1,2,6,4,5
         ];
-        // 根據 seed 進行列/欄隨機交換以變換題面
-        return board;
-    },
-
-    digHoles(seed) {
+        this.solution = [...base];
+        this.grid = [...base];
+        
+        // 依據種子挖空
         let count = 0;
-        let random = seed;
+        let s = parseInt(seed);
         while (count < this.difficulty) {
-            random = (random * 9301 + 49297) % 233280;
-            let pos = Math.floor((random / 233280) * 81);
-            if (this.grid[pos] !== 0) {
-                this.grid[pos] = 0;
-                count++;
-            }
+            s = (s * 9301 + 49297) % 233280;
+            let pos = Math.floor((s / 233280) * 81);
+            if (this.grid[pos] !== 0) { this.grid[pos] = 0; count++; }
         }
     },
 
@@ -77,36 +44,23 @@ const Sudoku = {
             } else {
                 cell.contentEditable = "true";
                 cell.inputMode = "numeric";
-                cell.addEventListener('input', (e) => this.onInput(e, i));
+                cell.oninput = (e) => {
+                    const val = e.target.innerText.replace(/[^1-9]/g, '').slice(0,1);
+                    e.target.innerText = val;
+                    this.grid[i] = val ? parseInt(val) : 0;
+                    if (!this.grid.includes(0)) this.checkWin();
+                };
             }
             board.appendChild(cell);
         }
     },
 
-    onInput(e, pos) {
-        const val = e.target.innerText.replace(/[^1-9]/g, '');
-        e.target.innerText = val;
-        this.grid[pos] = val === "" ? 0 : parseInt(val);
-        
-        // 檢查是否填滿並核對答案
-        if (!this.grid.includes(0)) {
-            this.validateResult();
-        }
-    },
-
-    validateResult() {
-        const isCorrect = this.grid.every((val, i) => val === this.solution[i]);
-        if (isCorrect) {
+    checkWin() {
+        if (this.grid.every((v, i) => v === this.solution[i])) {
             GameApp.stopTimer();
-            const score = this.calculateScore();
-            alert(`恭喜通關！總分：${score}`);
+            const score = Math.floor((Math.pow(this.difficulty, 2.5) * 100) / GameApp.seconds);
+            GameApp.uploadScore('sudoku', this.difficulty, score, GameApp.seconds);
             UI.showResult('sudoku', this.difficulty, GameApp.seconds, score);
         }
-    },
-
-    calculateScore() {
-        // 極限模式從 50 格開始，權重呈指數增加
-        const base = Math.pow(this.difficulty, 3);
-        return Math.floor((base * 10) / GameApp.seconds);
     }
 };

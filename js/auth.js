@@ -18,30 +18,32 @@ const Auth = {
 
         if (liff.isLoggedIn()) {
             const profile = await liff.getProfile();
+            window.userData = profile;
             nameEl.innerText = profile.displayName;
             avatarEl.src = profile.pictureUrl;
             
-            // 顯示登出，隱藏登入
             loginBtn.style.display = 'none';
             logoutBtn.style.display = 'block';
         } else {
+            window.userData = null;
             nameEl.innerText = "訪客玩家";
             avatarEl.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
             
-            // 顯示登入，隱藏登出
             loginBtn.style.display = 'block';
             logoutBtn.style.display = 'none';
         }
     },
 
     manualLogin() {
-        liff.login();
+        // 核心修正：強制登入後跳回目前的網址，避免系統瀏覽器自作聰明
+        liff.login({ redirectUri: window.location.href });
     },
 
     manualLogout() {
         if (confirm("確定要登出帳號嗎？")) {
             liff.logout();
-            window.location.reload();
+            // 登出後清空網址參數並重刷
+            window.location.href = window.location.origin + window.location.pathname;
         }
     }
 };

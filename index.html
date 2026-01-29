@@ -20,7 +20,7 @@
         </div>
 
         <div class="games-grid">
-            <div class="game-card active" onclick="window.location.href='./games/sudoku/index.html'">
+            <div class="game-card active" onclick="enterGame('sudoku')">
                 <div class="card-icon">🔢</div>
                 <div class="card-info">
                     <div class="game-title">數獨競技場</div>
@@ -33,7 +33,7 @@
                 <div class="card-icon">♠️</div>
                 <div class="card-info">
                     <div class="game-title">經典接龍</div>
-                    <div class="game-desc">開發中</div>
+                    <div class="game-desc">工程師正在趕路中...</div>
                 </div>
                 <div class="lock-icon">🔒</div>
             </div>
@@ -41,13 +41,5 @@
     </div>
 
     <script src="./js/lobby.js"></script>
-    <script>
-        // PWA 註冊
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').catch(err => console.log('PWA Error', err));
-            });
-        }
-    </script>
 </body>
 </html>

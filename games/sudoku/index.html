@@ -5,91 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>數獨競技場 | Sudoku Arena</title>
     <link rel="stylesheet" href="./style.css">
-    <style>
-        .rank-banner { background: #2C3E50; color: white; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 15px; }
-        .total-score-val { color: #F1C40F; font-size: 24px; font-weight: bold; }
-        .score-preview-box { text-align: center; background: #FFF; border: 2px solid #F1C40F; border-radius: 50px; padding: 10px; margin: 15px 0; box-shadow: 0 0 15px rgba(241, 196, 15, 0.3); }
-        .current-stat-banner { background: #4A90E2; color: white; display: flex; justify-content: space-around; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 14px; font-weight: bold; }
-        .hidden { display: none !important; }
-    </style>
 </head>
 <body>
     <div id="setup-page" class="screen active">
         <div class="rank-banner">
             <div id="player-rank-tag">載入中...</div>
-            <div class="total-score-val" id="display-total-score">0</div>
-            <div style="font-size: 12px; opacity: 0.8;">目前累積競技積分</div>
+            <div id="display-total-score" style="font-size: 24px; font-weight: bold; color: #F1C40F;">0</div>
         </div>
 
-        <div class="difficulty-group" style="display: flex; gap: 8px; margin-bottom: 15px;">
-            <button class="diff-btn" onclick="selectDifficulty(35)" style="flex:1; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background: white;">初級 35</button>
-            <button class="diff-btn" onclick="selectDifficulty(42)" style="flex:1; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background: white;">中級 42</button>
-            <button class="diff-btn" onclick="selectDifficulty(49)" style="flex:1; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background: white;">高級 49</button>
+        <div class="difficulty-group" style="display: flex; gap: 8px; margin-bottom: 10px;">
+            <button class="diff-btn" onclick="selectDifficulty(35)">初級 35</button>
+            <button class="diff-btn" onclick="selectDifficulty(42)">中級 42</button>
+            <button class="diff-btn" onclick="selectDifficulty(49)">高級 49</button>
         </div>
 
-        <div class="limit-mode-zone" style="background: #fef5e7; padding: 15px; border-radius: 12px;">
-            <div style="font-weight: bold; color: #e67e22; margin-bottom: 10px;">🔥 極限模式 (50-64格)</div>
-            <div class="stepper-box" style="display: flex; align-items: center; justify-content: center; gap: 20px;">
-                <button class="step-btn" onclick="adjustLimit(-1)" style="width:40px; height:40px; font-size: 24px;">−</button>
-                <span id="limit-display" style="font-size: 28px; font-weight: bold; width: 50px; text-align: center;">50</span>
-                <button class="step-btn" onclick="adjustLimit(1)" style="width:40px; height:40px; font-size: 24px;">+</button>
+        <div class="limit-mode-zone">
+            <div style="font-weight: bold; color: #e67e22;">🔥 極限模式 (50-64格)</div>
+            <div class="stepper-box" style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                <button class="step-btn" onclick="adjustLimit(-1)">−</button>
+                <span id="limit-display">50</span>
+                <button class="step-btn" onclick="adjustLimit(1)">+</button>
             </div>
-            <div class="score-preview-box">
-                <span id="score-preview">預估積分加權: x8.0</span>
-            </div>
+            <div id="score-preview" style="text-align: center; color: #D35400; font-weight: bold;">x8.0</div>
         </div>
 
-        <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
-            <button id="resume-btn" class="main-btn hidden" onclick="resumeGame()" style="background: #95a5a6; color: white; padding: 15px; border-radius: 10px; border: none;">繼續上一局</button>
-            <button class="main-btn primary" onclick="startGame()" style="background: #4A90E2; color: white; padding: 18px; border-radius: 50px; font-size: 20px; font-weight: bold; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">進入競技場</button>
-            <button onclick="location.href='../../index.html'" style="background:none; border:none; color:#777; padding: 10px;">回主大廳</button>
+        <div class="code-zone" style="background:#eee; padding:10px; border-radius:8px; margin-top:10px;">
+            <div style="font-size: 10px; color: #777;">競技種子碼：</div>
+            <div id="arena-code" style="font-family: monospace; font-size: 12px; word-break: break-all;">Generating...</div>
+        </div>
+
+        <div class="action-zone" style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+            <button class="main-btn primary" onclick="startGame()">進入競技場</button>
+            <button onclick="location.href='../../index.html'" style="background:none; border:none; color:#777;">回大廳</button>
         </div>
     </div>
 
     <div id="game-page" class="screen">
-        <div class="current-stat-banner">
+        <div class="game-header" style="display:flex; justify-content:space-between; align-items:center; background:#4A90E2; color:white; padding:10px; border-radius:8px;">
             <div>難度: <span id="current-diff-display">--</span></div>
-            <div>加成: <span id="current-coeff-display">--</span></div>
             <div>⏱ <span id="timer">00:00</span></div>
+            <button onclick="confirmExit()" style="background:#E74C3C; color:white; border:none; border-radius:4px; padding:4px 10px;">退出</button>
         </div>
         
         <div id="sudoku-board" class="sudoku-board"></div>
         
         <div class="controls">
-            <div class="tools" style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <button id="note-mode-btn" onclick="toggleNoteMode()" style="flex:1; padding: 12px; border-radius: 8px; border: 1px solid #ccc; background: #fff;">✏️ 筆記: 關</button>
-                <button onclick="eraseCell()" style="flex:1; padding: 12px; border-radius: 8px; border: 1px solid #ccc; background: #fff;">⌫ 擦除</button>
+            <div class="tools" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <button id="note-mode-btn" onclick="toggleNoteMode()" style="flex:1;">✏️ 筆記: 關</button>
+                <button onclick="eraseCell()" style="flex:1;">⌫ 擦除</button>
             </div>
             <div class="numpad">
-                <button onclick="inputAction(1)">1</button>
-                <button onclick="inputAction(2)">2</button>
-                <button onclick="inputAction(3)">3</button>
-                <button onclick="inputAction(4)">4</button>
-                <button onclick="inputAction(5)">5</button>
-                <button onclick="inputAction(6)">6</button>
-                <button onclick="inputAction(7)">7</button>
-                <button onclick="inputAction(8)">8</button>
-                <button onclick="inputAction(9)">9</button>
+                <button onclick="inputAction(1)">1</button><button onclick="inputAction(2)">2</button><button onclick="inputAction(3)">3</button>
+                <button onclick="inputAction(4)">4</button><button onclick="inputAction(5)">5</button><button onclick="inputAction(6)">6</button>
+                <button onclick="inputAction(7)">7</button><button onclick="inputAction(8)">8</button><button onclick="inputAction(9)">9</button>
             </div>
-            <button onclick="confirmExit()" style="width:100%; margin-top:15px; background:none; border:none; color:#E74C3C; font-weight:bold;">放棄對局</button>
         </div>
     </div>
-
-    <div id="result-page" class="screen">
-        <h2 style="text-align: center; color: #4A90E2;">挑戰成功！</h2>
-        <div style="width: 120px; height: 120px; background: #4A90E2; color: white; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 20px auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-            <div id="final-score" style="font-size: 32px; font-weight: bold;">0</div>
-            <div style="font-size: 12px;">總積分</div>
-        </div>
-        <div style="display: flex; justify-content: space-around; margin-bottom: 30px; text-align: center;">
-            <div><span id="res-time" style="font-weight:bold;">0s</span><br><small>時間</small></div>
-            <div><span id="res-diff" style="font-weight:bold;">35</span><br><small>難度</small></div>
-            <div><span id="res-hint" style="font-weight:bold;">0</span><br><small>提示</small></div>
-        </div>
-        <button class="main-btn primary" onclick="location.reload()" style="width: 100%; padding: 15px; background: #4A90E2; color: white; border: none; border-radius: 8px; font-weight: bold;">再玩一局</button>
-        <button class="main-btn" onclick="location.href='../../index.html'" style="width: 100%; margin-top: 10px; background: none; border: none; color: #777;">回主大廳</button>
-    </div>
-
+    
     <script src="./js/engine.js"></script>
     <script src="./js/app.js"></script>
 </body>

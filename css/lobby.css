@@ -1,41 +1,24 @@
 :root {
     --primary-color: #2C3E50;
-    --accent-color: #E74C3C;
+    --accent-color: #4CA1AF;
     --card-bg: #FFFFFF;
-    --bg-color: #F0F2F5;
+    --text-main: #333333;
 }
 
-body {
-    margin: 0;
-    padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background-color: var(--bg-color);
-    color: #333;
-}
-
-.lobby-container {
-    max-width: 480px;
-    margin: 0 auto;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-/* 1. 個人資訊區 */
 .profile-header {
-    background: linear-gradient(135deg, #2C3E50, #4CA1AF);
-    padding: 30px 20px;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    padding: 40px 20px;
     display: flex;
     align-items: center;
     color: white;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .avatar-circle img {
-    width: 60px;
-    height: 60px;
+    width: 65px;
+    height: 65px;
     border-radius: 50%;
-    border: 3px solid white;
+    border: 3px solid rgba(255,255,255,0.8);
     object-fit: cover;
 }
 
@@ -44,27 +27,24 @@ body {
 }
 
 .user-name {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: bold;
 }
 
 .user-rank {
-    font-size: 14px;
-    opacity: 0.9;
-    margin-top: 4px;
+    font-size: 13px;
+    margin-top: 6px;
     background: rgba(255,255,255,0.2);
-    padding: 2px 8px;
-    border-radius: 12px;
+    padding: 3px 10px;
+    border-radius: 20px;
     display: inline-block;
 }
 
-/* 2. 遊戲列表區 */
 .games-grid {
-    flex: 1;
     padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 16px;
 }
 
 .game-card {
@@ -73,65 +53,46 @@ body {
     padding: 20px;
     display: flex;
     align-items: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    transition: transform 0.2s, box-shadow 0.2s;
-    cursor: pointer;
-    border: 2px solid transparent;
+    text-decoration: none;
+    color: var(--text-main);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: all 0.2s ease;
+    border: 1px solid #eee;
 }
 
 .game-card.active:active {
-    transform: scale(0.98);
-    background-color: #f9f9f9;
-}
-
-.game-card.active:hover {
-    border-color: var(--primary-color);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.game-card.disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    background: #e9e9e9;
+    transform: translateY(2px);
+    background-color: #fcfcfc;
 }
 
 .card-icon {
     font-size: 32px;
-    margin-right: 15px;
-    width: 40px;
-    text-align: center;
+    width: 50px;
 }
 
 .card-info {
     flex: 1;
+    margin-left: 10px;
 }
 
 .game-title {
     font-size: 18px;
     font-weight: bold;
-    color: #2C3E50;
 }
 
 .game-desc {
-    font-size: 14px;
-    color: #666;
-    margin-top: 4px;
+    font-size: 13px;
+    color: #888;
+    margin-top: 2px;
+}
+
+.game-card.disabled {
+    opacity: 0.6;
+    filter: grayscale(1);
+    cursor: not-allowed;
 }
 
 .arrow {
-    font-size: 20px;
     color: #ccc;
-    font-weight: bold;
-}
-
-.active .arrow {
-    color: var(--accent-color);
-}
-
-/* 3. 底部 */
-.footer {
-    text-align: center;
-    padding: 20px;
-    color: #999;
-    font-size: 12px;
+    font-size: 18px;
 }

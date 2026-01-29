@@ -1,4 +1,3 @@
-/* games/sudoku/style.css */
 :root {
     --primary-color: #4A90E2;
     --accent-color: #F5A623;
@@ -6,128 +5,55 @@
     --bg-color: #F8F9FA;
     --board-border: #333;
     --cell-border: #ccc;
-    --selected-bg: #4A90E2; /* 選中時的背景 */
-    --highlight-bg: #EAF2F8; /* 十字高亮 */
-    --text-color: #333;
+    --selected-bg: #4A90E2;
+    --highlight-bg: #EAF2F8;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    overflow: hidden;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
+    margin: 0; background-color: var(--bg-color); height: 100vh;
+    display: flex; justify-content: center; font-family: sans-serif;
 }
 
-.screen {
-    display: none;
-    width: 100%;
-    max-width: 480px;
-    height: 100%;
-    flex-direction: column;
-    padding: 20px;
-    box-sizing: border-box;
-}
-
+.screen { display: none; width: 100%; max-width: 480px; flex-direction: column; padding: 20px; box-sizing: border-box; }
 .screen.active { display: flex; }
 
-/* --- 設置頁 --- */
-.header-title { font-size: 28px; font-weight: bold; text-align: center; margin-bottom: 20px; color: var(--primary-color); }
-.section-title { font-size: 18px; margin-bottom: 10px; font-weight: 600; }
-.difficulty-group { display: flex; justify-content: space-between; margin-bottom: 20px; }
-.diff-btn { flex: 1; margin: 0 5px; padding: 15px 0; font-size: 16px; border: 1px solid #ddd; background: white; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
-.diff-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); transform: scale(1.05); }
-
-.limit-mode-zone { background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; text-align: center; transition: opacity 0.3s; }
-.limit-label { color: var(--danger-color); font-weight: bold; margin-bottom: 10px; }
-.stepper-box { display: flex; justify-content: center; align-items: center; gap: 20px; }
-.step-btn { width: 40px; height: 40px; font-size: 24px; border-radius: 50%; border: none; background: #eee; cursor: pointer; }
-#limit-display { font-size: 36px; font-weight: bold; width: 60px; }
-
-.code-box { background: #333; color: #0f0; padding: 10px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-family: monospace; margin-bottom: 10px; }
-.code-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 10px; }
-.copy-btn { background: #555; border: 1px solid #777; color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
-
-.main-btn { width: 100%; padding: 18px; font-size: 20px; border: none; border-radius: 50px; margin-top: 10px; cursor: pointer; font-weight: bold; }
-.main-btn.primary { background: var(--primary-color); color: white; box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3); }
-.main-btn.secondary { background: #fff; border: 2px solid #ddd; color: #666; }
-.hidden { display: none !important; }
-
-/* --- 遊戲盤面 --- */
-.game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.timer-box { font-size: 20px; font-weight: bold; font-family: monospace; }
-.menu-btn { background: none; border: 1px solid #ccc; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
-
+/* 盤面格線優化 */
 .sudoku-board {
-    display: grid;
-    grid-template-columns: repeat(9, 1fr);
-    gap: 1px;
-    background: var(--board-border);
-    border: 2px solid var(--board-border);
-    aspect-ratio: 1/1;
-    margin-bottom: 20px;
+    display: grid; grid-template-columns: repeat(9, 1fr);
+    background: var(--board-border); border: 2px solid var(--board-border);
+    aspect-ratio: 1/1; width: 100%; margin-bottom: 20px;
 }
 
 .cell {
-    background: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 20px;
-    font-weight: 500;
-    cursor: pointer;
-    user-select: none;
-    position: relative;
-    color: #333; /* 預設文字顏色 */
+    background: white; position: relative; display: flex;
+    justify-content: center; align-items: center; font-size: 24px;
+    cursor: pointer; user-select: none;
 }
 
-/* 3x3 粗框線 */
+/* 3x3 粗線 */
 .cell:nth-child(3n) { border-right: 2px solid var(--board-border); }
 .cell:nth-child(9n) { border-right: none; }
 .cell:nth-child(n+19):nth-child(-n+27),
 .cell:nth-child(n+46):nth-child(-n+54) { border-bottom: 2px solid var(--board-border); }
 
-/* --- 狀態樣式 (修復看不到字的問題) --- */
-.cell.highlight { background-color: var(--highlight-bg); }
-.cell.same-num { background-color: #B3D1EA; font-weight: bold; }
-
-/* 選中狀態：強制白字，確保看得見 */
-.cell.selected { 
-    background-color: var(--selected-bg) !important; 
-    color: white !important; 
-    z-index: 2; /* 浮起來 */
+/* 筆記網格樣式 */
+.notes-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    width: 100%; height: 100%; pointer-events: none;
+}
+.note-num {
+    display: flex; justify-content: center; align-items: center;
+    font-size: 10px; color: #777; line-height: 1;
 }
 
+/* 狀態顏色 */
+.cell.selected { background-color: var(--selected-bg) !important; color: white !important; }
+.cell.highlight { background-color: var(--highlight-bg); }
 .cell.fixed { font-weight: bold; color: #000; }
 .cell.user-input { color: var(--primary-color); }
+.cell.error { background-color: #FFCDD2 !important; color: #D32F2F !important; }
 
-/* 錯誤狀態：優先權最高 */
-.cell.error { 
-    background-color: #FFCDD2 !important; 
-    color: #D32F2F !important; 
-}
-/* 如果是選中又是錯誤 */
-.cell.selected.error {
-    background-color: #E57373 !important;
-}
-
-/* 鍵盤與工具 */
-.numpad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-.numpad button { height: 50px; font-size: 24px; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 0 #ccc; cursor: pointer; }
-.numpad button:active { transform: translateY(2px); box-shadow: none; }
-.tools { display: flex; justify-content: space-between; margin-bottom: 10px; }
-.tool-btn { flex: 1; margin: 0 5px; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: #fff; cursor: pointer; }
-
-/* --- 結算頁 --- */
-.result-title { font-size: 32px; color: var(--primary-color); text-align: center; margin-bottom: 20px; font-weight: bold; }
-.score-circle { width: 150px; height: 150px; border-radius: 50%; background: var(--primary-color); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 0 auto 30px auto; box-shadow: 0 10px 20px rgba(74, 144, 226, 0.4); }
-.score-val { font-size: 48px; font-weight: bold; }
-.score-label { font-size: 16px; opacity: 0.8; }
-.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; margin-bottom: 30px; }
-.stat-item { background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #eee; display: flex; flex-direction: column; }
-.stat-item .val { font-size: 20px; font-weight: bold; color: #333; }
-.stat-item .lbl { font-size: 12px; color: #999; margin-top: 4px; }
+/* 數字鍵盤 */
+.numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.numpad button { height: 60px; font-size: 24px; border-radius: 8px; border: 1px solid #ddd; background: white; cursor: pointer; }
+.tool-btn.active { background: var(--accent-color); color: white; }

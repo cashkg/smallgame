@@ -1,82 +1,21 @@
-:root {
-    --primary-color: #4A90E2;
-    --accent-color: #F5A623;
-    --danger-color: #E74C3C;
-    --bg-color: #F8F9FA;
-    --board-border: #333;
-    --cell-border: #ccc;
-    --selected-bg: #4A90E2;
-    --highlight-bg: #EAF2F8;
-}
-
-body {
-    margin: 0; background-color: var(--bg-color); height: 100vh;
-    display: flex; justify-content: center; font-family: sans-serif;
-}
-
-.screen { display: none; width: 100%; max-width: 480px; flex-direction: column; padding: 20px; box-sizing: border-box; }
-.screen.active { display: flex; }
-
-/* 盤面格線優化 */
-.sudoku-board {
-    display: grid; grid-template-columns: repeat(9, 1fr);
-    background: var(--board-border); border: 2px solid var(--board-border);
-    aspect-ratio: 1/1; width: 100%; margin-bottom: 20px;
-}
-
-.cell {
-    background: white; position: relative; display: flex;
-    justify-content: center; align-items: center; font-size: 24px;
-    cursor: pointer; user-select: none;
-}
-
-/* 3x3 粗線 */
-.cell:nth-child(3n) { border-right: 2px solid var(--board-border); }
-.cell:nth-child(9n) { border-right: none; }
-.cell:nth-child(n+19):nth-child(-n+27),
-.cell:nth-child(n+46):nth-child(-n+54) { border-bottom: 2px solid var(--board-border); }
-
-/* 筆記網格樣式 */
-.notes-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    width: 100%; height: 100%; pointer-events: none;
-}
+/* 筆記網格修正 */
 .note-num {
-    display: flex; justify-content: center; align-items: center;
-    font-size: 10px; color: #777; line-height: 1;
-}
-
-/* 狀態顏色 */
-.cell.selected { background-color: var(--selected-bg) !important; color: white !important; }
-.cell.highlight { background-color: var(--highlight-bg); }
-.cell.fixed { font-weight: bold; color: #000; }
-.cell.user-input { color: var(--primary-color); }
-.cell.error { background-color: #FFCDD2 !important; color: #D32F2F !important; }
-
-/* 數字鍵盤 */
-.numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.numpad button { height: 60px; font-size: 24px; border-radius: 8px; border: 1px solid #ddd; background: white; cursor: pointer; }
-.tool-btn.active { background: var(--accent-color); color: white; }
-
-/* 數字鍵上的剩餘統計標籤 */
-.numpad button {
-    position: relative;
-    overflow: visible;
-}
-
-.num-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: var(--danger-color);
-    color: white;
-    font-size: 10px;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    font-size: 9px;
+    color: #3498DB !important; /* 明亮的藍色，區別於大數字 */
     font-weight: bold;
+}
+
+/* 選中格子時筆記變白，確保看得到 */
+.cell.selected .note-num {
+    color: rgba(255,255,255,0.8) !important;
+}
+
+/* 禁止點擊狀態 */
+.btn-disabled {
+    opacity: 0.2;
+    pointer-events: none; /* 完全無法點選 */
+    filter: grayscale(1);
 }

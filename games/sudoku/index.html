@@ -3,20 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>數獨競技場 | Sudoku Arena</title>
+    <title>數獨競技場</title>
     <link rel="stylesheet" href="./style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
     <div id="setup-page" class="screen active">
         <div class="header-title">數獨競技場</div>
-        <div id="rank-display" style="text-align:center; color:#F5A623; font-weight:bold; margin-bottom:15px;"></div>
-        
         <div class="section-title">選擇難度</div>
         <div class="difficulty-group">
             <button class="diff-btn" onclick="selectDifficulty(35)">初級 35</button>
             <button class="diff-btn" onclick="selectDifficulty(42)">中級 42</button>
             <button class="diff-btn" onclick="selectDifficulty(49)">高級 49</button>
+        </div>
+        <div class="limit-mode-zone">
+            <div class="limit-label">🔥 極限模式 (50-64)</div>
+            <div class="stepper-box">
+                <button class="step-btn" onclick="adjustLimit(-1)">−</button>
+                <span id="limit-display">50</span>
+                <button class="step-btn" onclick="adjustLimit(1)">+</button>
+            </div>
+            <div id="score-preview" class="score-preview">預估加權: x6.0</div>
         </div>
         <div class="action-zone">
             <button class="main-btn primary" onclick="startGame()">開始競技</button>

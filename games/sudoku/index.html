@@ -8,52 +8,52 @@
 </head>
 <body>
     <div id="setup-page" class="screen active">
-        <div class="rank-banner" style="background: #2C3E50; color: white; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 15px;">
-            <div id="player-rank-tag">新手玩家 🌱</div>
+        <div class="rank-banner">
+            <div id="player-rank-tag">載入中...</div>
             <div id="display-total-score" style="font-size: 24px; font-weight: bold; color: #F1C40F;">0</div>
         </div>
 
-        <div class="difficulty-group" style="display: flex; gap: 8px; margin-bottom: 15px;">
-            <button class="diff-btn" onclick="selectDifficulty(35)" style="flex:1; padding: 12px; border: 1px solid #ddd; background: white; border-radius: 8px;">初級 35</button>
-            <button class="diff-btn" onclick="selectDifficulty(42)" style="flex:1; padding: 12px; border: 1px solid #ddd; background: white; border-radius: 8px;">中級 42</button>
-            <button class="diff-btn" onclick="selectDifficulty(49)" style="flex:1; padding: 12px; border: 1px solid #ddd; background: white; border-radius: 8px;">高級 49</button>
+        <div class="difficulty-group">
+            <button class="diff-btn" onclick="selectDifficulty(35)">初級 35</button>
+            <button class="diff-btn" onclick="selectDifficulty(42)">中級 42</button>
+            <button class="diff-btn" onclick="selectDifficulty(49)">高級 49</button>
         </div>
 
-        <div class="limit-mode-zone" style="background: #fef5e7; padding: 15px; border-radius: 12px;">
-            <div style="font-weight: bold; color: #e67e22; margin-bottom: 10px;">🔥 極限模式 (50-64格)</div>
-            <div class="stepper-box" style="display: flex; align-items: center; justify-content: center; gap: 20px;">
-                <button class="step-btn" onclick="adjustLimit(-1)" style="width:40px; height:40px; font-size: 24px;">−</button>
-                <span id="limit-display" style="font-size: 28px; font-weight: bold; width: 50px; text-align: center;">50</span>
-                <button class="step-btn" onclick="adjustLimit(1)" style="width:40px; height:40px; font-size: 24px;">+</button>
+        <div class="limit-mode-zone">
+            <div class="limit-label">🔥 極限模式 (50-64格)</div>
+            <div class="stepper-box">
+                <button class="step-btn" onclick="adjustLimit(-1)">−</button>
+                <span id="limit-display">50</span>
+                <button class="step-btn" onclick="adjustLimit(1)">+</button>
             </div>
-            <div id="score-preview" style="text-align: center; color: #D35400; font-weight: bold; margin-top: 10px;">加權: x8.0</div>
+            <div id="score-preview" class="score-preview">加權: x8.0</div>
         </div>
 
-        <div class="code-zone" style="background:#eee; padding:10px; border-radius:8px; margin-top:15px;">
-            <div style="font-size: 10px; color: #777;">競技種子碼：</div>
-            <div id="arena-code" style="font-family: monospace; font-size: 12px; word-break: break-all;">Generating...</div>
+        <div class="code-zone">
+            <div class="code-label">競技種子碼：</div>
+            <div id="arena-code">Generating...</div>
         </div>
 
-        <div class="action-zone" style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
-            <button class="main-btn primary" onclick="startGame()" style="background: #4A90E2; color: white; padding: 18px; border-radius: 50px; font-size: 18px; font-weight: bold; border: none;">進入競技場</button>
-            <button id="resume-btn" class="hidden" onclick="resumeGame()" style="background: #95a5a6; color: white; padding: 12px; border-radius: 8px; border: none;">繼續上一局</button>
-            <button onclick="location.href='../../index.html'" style="background:none; border:none; color:#777; padding: 10px;">回主大廳</button>
+        <div class="action-zone">
+            <button class="main-btn primary" onclick="startGame()">進入競技場</button>
+            <button id="resume-btn" class="main-btn secondary hidden" onclick="resumeGame()">繼續上一局</button>
+            <button class="exit-to-main" onclick="location.href='../../index.html'">回主大廳</button>
         </div>
     </div>
 
     <div id="game-page" class="screen">
-        <div class="game-header" style="display:flex; justify-content:space-between; align-items:center; background:#4A90E2; color:white; padding:10px; border-radius:8px; margin-bottom: 10px;">
-            <div>難度: <span id="current-diff-display">--</span></div>
-            <div>⏱ <span id="timer">00:00</span></div>
-            <button onclick="confirmExit()" style="background:#E74C3C; color:white; border:none; border-radius:4px; padding:5px 12px; font-weight: bold;">退出</button>
+        <div class="game-header">
+            <div class="header-left">難度: <span id="current-diff-display">--</span></div>
+            <div class="header-center">⏱ <span id="timer">00:00</span></div>
+            <div class="header-right"><button class="exit-btn" onclick="confirmExit()">退出</button></div>
         </div>
         
         <div id="sudoku-board" class="sudoku-board"></div>
         
         <div class="controls">
-            <div class="tools" style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <button id="note-mode-btn" onclick="toggleNoteMode()" style="flex:1; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: white;">✏️ 筆記: 關</button>
-                <button onclick="eraseCell()" style="flex:1; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: white;">⌫ 擦除</button>
+            <div class="tools">
+                <button id="note-mode-btn" onclick="toggleNoteMode()">✏️ 筆記: 關</button>
+                <button onclick="eraseCell()">⌫ 擦除</button>
             </div>
             <div class="numpad">
                 <button onclick="inputAction(1)">1</button><button onclick="inputAction(2)">2</button><button onclick="inputAction(3)">3</button>
@@ -62,7 +62,10 @@
             </div>
         </div>
     </div>
-    
+
+    <div id="result-page" class="screen">
+        </div>
+
     <script src="./js/engine.js"></script>
     <script src="./js/app.js"></script>
 </body>

@@ -10,84 +10,19 @@
 <body>
     <div id="setup-page" class="screen active">
         <div class="header-title">數獨競技場</div>
+        <div id="rank-display" style="text-align:center; color:#F5A623; font-weight:bold; margin-bottom:15px;"></div>
+        
         <div class="section-title">選擇難度</div>
         <div class="difficulty-group">
             <button class="diff-btn" onclick="selectDifficulty(35)">初級 35</button>
             <button class="diff-btn" onclick="selectDifficulty(42)">中級 42</button>
             <button class="diff-btn" onclick="selectDifficulty(49)">高級 49</button>
         </div>
-
-        <div class="limit-mode-zone">
-            <div class="limit-label">🔥 極限模式 (50-64)</div>
-            <div class="stepper-box">
-                <button class="step-btn" onclick="adjustLimit(-1)">−</button>
-                <span id="limit-display">50</span>
-                <button class="step-btn" onclick="adjustLimit(1)">+</button>
-            </div>
-            <div id="score-preview" class="score-preview" style="color: #F5A623; font-weight: bold;">預估加權: x6.0</div>
-        </div>
-
-        <div class="code-zone">
-            <div class="code-box">
-                <span class="code-label">競技代碼</span>
-                <div class="code-text" id="arena-code">Loading...</div>
-                <button class="copy-btn" onclick="copyCode()">📋 複製</button>
-            </div>
-        </div>
-
         <div class="action-zone">
-            <button id="resume-btn" class="main-btn secondary hidden" onclick="resumeGame()">繼續上一局</button>
             <button class="main-btn primary" onclick="startGame()">開始競技</button>
+            <button class="main-btn secondary" onclick="location.href='../../index.html'">回大廳</button>
         </div>
     </div>
-
-    <div id="game-page" class="screen">
-        <div class="game-header">
-            <div class="timer-box">⏱ <span id="timer">00:00</span></div>
-            <div class="hint-box">
-                <button id="hint-btn" onclick="useHint()">💡 提示 (2)</button>
-            </div>
-            <button class="menu-btn" onclick="confirmExit()">退出</button>
-        </div>
-
-        <div id="sudoku-board" class="sudoku-board"></div>
-
-        <div class="controls">
-            <div class="tools">
-                <button class="tool-btn" id="note-mode-btn" onclick="toggleNoteMode()">✏️ 筆記: 關</button>
-                <button class="tool-btn" onclick="eraseCell()">⌫ 擦除</button>
-            </div>
-            <div class="numpad">
-                <button onclick="inputAction(1)">1</button>
-                <button onclick="inputAction(2)">2</button>
-                <button onclick="inputAction(3)">3</button>
-                <button onclick="inputAction(4)">4</button>
-                <button onclick="inputAction(5)">5</button>
-                <button onclick="inputAction(6)">6</button>
-                <button onclick="inputAction(7)">7</button>
-                <button onclick="inputAction(8)">8</button>
-                <button onclick="inputAction(9)">9</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="result-page" class="screen">
-        <div class="result-title">挑戰成功！</div>
-        <div class="score-circle">
-            <div class="score-val" id="final-score">0</div>
-            <div class="score-label">總積分</div>
-        </div>
-        <div class="stats-grid">
-            <div class="stat-item"><span class="val" id="res-time">0s</span><span class="lbl">時間</span></div>
-            <div class="stat-item"><span class="val" id="res-diff">35</span><span class="lbl">難度</span></div>
-            <div class="stat-item"><span class="val" id="res-hint">0</span><span class="lbl">提示</span></div>
-        </div>
-        <div class="action-zone">
-            <button class="main-btn primary" onclick="shareResult()">分享戰績</button>
-            <button class="main-btn secondary" onclick="goHome()">回大廳</button>
-        </div>
-    </div>
-
     <script src="./js/engine.js"></script>
     <script src="./js/app.js"></script>
 </body>

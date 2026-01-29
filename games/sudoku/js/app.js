@@ -1,114 +1,86 @@
 /**
- * Sudoku App - 筆記模式與操作回退版
+ * 數獨 App - 戰績上傳與數字統計版
  */
-const engine = new SudokuEngine();
 
-let gameState = {
-    screen: 'setup', difficulty: 35, timer: 0, timerInterval: null,
-    board: [], notes: [], solution: [], fixedMask: [],
-    hintsLeft: 2, isNoteMode: false, selectedCell: null,
-    history: [] // 用於 Undo 功能
-};
-
-// 初始化筆記數據 (81格，每格存放 1-9 的布林值)
-function initNotes() {
-    gameState.notes = Array.from({ length: 9 }, () => 
-        Array.from({ length: 9 }, () => Array(10).fill(false))
-    );
-}
-
-// 切換筆記模式
-function toggleNoteMode() {
-    gameState.isNoteMode = !gameState.isNoteMode;
-    const btn = document.getElementById('note-mode-btn');
-    btn.innerText = `✏️ 筆記: ${gameState.isNoteMode ? '開' : '關'}`;
-    btn.classList.toggle('active', gameState.isNoteMode);
-}
-
-// 輸入動作判定
-function inputAction(num) {
-    if (!gameState.selectedCell) return;
-    const { r, c } = gameState.selectedCell;
-    if (gameState.fixedMask[r][c]) return;
-
-    saveHistory(); // 每次更動前存入歷史紀錄
-
-    if (gameState.isNoteMode) {
-        // 筆記模式：切換小數字開關
-        gameState.notes[r][c][num] = !gameState.notes[r][c][num];
-        gameState.board[r][c] = 0; // 填筆記時清除大數字
-    } else {
-        // 普通模式：填入大數字
-        gameState.board[r][c] = num;
-        // 填入大數字後，清空該格所有筆記
-        gameState.notes[r][c].fill(false);
+// --- [核心新增] 剩餘數字統計 ---
+function updateNumberCounts() {
+    let counts = Array(10).fill(0);
+    // 統計盤面上 1-9 出現次數
+    for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+            let val = gameState.board[r][c];
+            if (val !== 0) counts[val]++;
+        }
     }
-    
+
+    // 更新 UI 鍵盤
+    const buttons = document.querySelectorAll('.numpad button');
+    buttons.forEach((btn, index) => {
+        let num = index + 1;
+        let remaining = 9 - counts[num];
+        
+        // 移除舊標籤
+        let oldBadge = btn.querySelector('.num-badge');
+        if (oldBadge) oldBadge.remove();
+
+        if (remaining > 0) {
+            let badge = document.createElement('span');
+            badge.className = 'num-badge';
+            badge.innerText = remaining;
+            btn.appendChild(badge);
+            btn.disabled = false;
+            btn.style.opacity = "1";
+        } else {
+            // 數字已滿 9 個，按鈕變灰
+            btn.disabled = true;
+            btn.style.opacity = "0.3";
+        }
+    });
+}
+
+// --- [隱藏功能] Checksum 生成器 ---
+function getClientChecksum() {
+    let boardStr = gameState.board.flat().join('');
+    let raw = gameState.seed.board + "X" + gameState.timer + "Y" + (2 - gameState.hintsLeft) + "Z" + boardStr.substring(0, 10);
+    let hash = 0;
+    for (let i = 0; i < raw.length; i++) {
+        hash = ((hash << 5) - hash) + raw.charCodeAt(i);
+        hash |= 0;
+    }
+    return Math.abs(hash).toString(16).substring(0, 8);
+}
+
+// --- [核心優化] 完賽並上傳戰績 ---
+async function uploadRecord(score) {
+    const GAS_URL = "你的_GAS_網頁應用程式網址"; 
+    const payload = {
+        userName: localStorage.getItem('user_name') || "玩家",
+        difficulty: gameState.difficulty,
+        time: gameState.timer,
+        score: score,
+        seed: gameState.seed.board,
+        hints: 2 - gameState.hintsLeft,
+        boardStr: gameState.board.flat().join(''),
+        checksum: getClientChecksum() // 靜悄悄地上傳校驗碼
+    };
+
+    try {
+        await fetch(GAS_URL, {
+            method: 'POST',
+            mode: 'no-cors', // GAS 跨域常用設定
+            body: JSON.stringify(payload)
+        });
+        console.log("戰績已同步至雲端");
+    } catch (e) {
+        console.error("同步失敗", e);
+    }
+}
+
+// 在 inputAction 結束時調用統計
+function inputAction(num) {
+    // ... 原有邏輯 ...
     renderCell(r, c);
+    updateNumberCounts(); // 更新統計
     checkAllErrors();
     checkWin();
 }
-
-// 渲染單個格子
-function renderCell(r, c) {
-    const cell = document.getElementById(`cell-${r}-${c}`);
-    cell.innerHTML = '';
-    const val = gameState.board[r][c];
-
-    if (val !== 0) {
-        cell.innerText = val;
-    } else {
-        // 渲染筆記 3x3 網格
-        const grid = document.createElement('div');
-        grid.className = 'notes-grid';
-        for (let i = 1; i <= 9; i++) {
-            const note = document.createElement('div');
-            note.className = 'note-num';
-            note.innerText = gameState.notes[r][c][i] ? i : '';
-            grid.appendChild(note);
-        }
-        cell.appendChild(grid);
-    }
-}
-
-// 存入歷史 (Undo)
-function saveHistory() {
-    gameState.history.push({
-        board: JSON.parse(JSON.stringify(gameState.board)),
-        notes: JSON.parse(JSON.stringify(gameState.notes))
-    });
-    if (gameState.history.length > 20) gameState.history.shift(); // 最多存20步
-}
-
-// 實作全盤判贏 (邏輯校驗)
-function checkWin() {
-    for (let r = 0; r < 9; r++) {
-        for (let c = 0; c < 9; c++) {
-            if (gameState.board[r][c] === 0) return;
-        }
-    }
-    if (!hasAnyConflict()) {
-        clearInterval(gameState.timerInterval);
-        showResult();
-    }
-}
-
-// 渲染盤面 (更新版)
-function renderBoard() {
-    initNotes();
-    const container = document.getElementById('sudoku-board');
-    container.innerHTML = '';
-    for(let r=0; r<9; r++) {
-        for(let c=0; c<9; c++) {
-            const div = document.createElement('div');
-            div.className = 'cell';
-            div.id = `cell-${r}-${c}`;
-            if (gameState.fixedMask[r][c]) div.classList.add('fixed');
-            div.onclick = () => selectCell(r, c);
-            container.appendChild(div);
-            renderCell(r, c);
-        }
-    }
-}
-
-// 其他基礎函式 (如 selectCell, hasAnyConflict, checkAllErrors) 請沿用前版邏輯...

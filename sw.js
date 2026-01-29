@@ -1,42 +1,28 @@
-/**
- * PWA Service Worker - v2 (強迫更新版)
- */
-const CACHE_NAME = 'sudoku-arena-v2'; // 更改版本號觸發更新
-const ASSETS_TO_CACHE = [
-    './',
-    './index.html',
-    './css/lobby.css',
-    './js/lobby.js',
-    './games/sudoku/index.html',
-    './games/sudoku/style.css',
-    './games/sudoku/js/engine.js',
-    './games/sudoku/js/app.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'
+const CACHE_NAME = 'sudoku-arena-v3'; // 每次更新代碼請改此版本號
+const ASSETS = [
+    './', './index.html', './css/lobby.css', './js/lobby.js',
+    './games/sudoku/index.html', './games/sudoku/style.css',
+    './games/sudoku/js/engine.js', './games/sudoku/js/app.js'
 ];
 
-// 安裝時跳過等待，立即取代舊版
-self.addEventListener('install', (event) => {
-    self.skipWaiting(); 
-    event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
-    );
+self.addEventListener('install', (e) => {
+    self.skipWaiting(); // 強制跳過等待，立即更新
+    e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
 });
 
-// 啟動時刪除所有舊版本的快取
-self.addEventListener('activate', (event) => {
-    event.waitUntil(
-        caches.keys().then((keys) => {
-            return Promise.all(
-                keys.map(key => {
-                    if (key !== CACHE_NAME) return caches.delete(key);
-                })
-            );
-        }).then(() => self.clients.claim())
-    );
+self.addEventListener('activate', (e) => {
+    e.waitUntil(caches.keys().then(keys => Promise.all(
+        keys.map(k => k !== CACHE_NAME && caches.delete(k))
+    )).then(() => self.clients.claim()));
 });
 
-self.addEventListener('fetch', (event) => {
-    event.respondWith(
-        caches.match(event.request).then((response) => response || fetch(event.request))
+// 策略：網路優先，失敗才用快取，並在背景更新快取
+self.addEventListener('fetch', (e) => {
+    e.respondWith(
+        fetch(e.request).then(res => {
+            const clone = res.clone();
+            caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+            return res;
+        }).catch(() => caches.match(e.request))
     );
 });

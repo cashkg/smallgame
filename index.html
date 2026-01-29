@@ -6,20 +6,15 @@
     <title>競技場 | Game Center</title>
     <link rel="stylesheet" href="./css/lobby.css">
     <link rel="manifest" href="./manifest.json">
-    <style>
-        /* 直接在此修正緊急佈局問題 */
-        body { background-color: #F0F2F5; margin: 0; padding: 0; font-family: sans-serif; }
-        .lobby-container { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
-    </style>
 </head>
 <body>
     <div class="lobby-container">
         <div class="profile-header">
             <div class="avatar-circle">
-                <img id="user-avatar" src="https://via.placeholder.com/60/4A90E2/FFFFFF?text=USER" alt="Avatar">
+                <img id="user-avatar" src="https://via.placeholder.com/60/4A90E2/FFFFFF?text=U" alt="Avatar">
             </div>
             <div class="user-info">
-                <div class="user-name" id="user-name">玩家載入中...</div>
+                <div class="user-name" id="user-name">載入中...</div>
                 <div id="user-rank-display" class="user-rank">新手玩家 🌱</div>
             </div>
         </div>
@@ -45,24 +40,11 @@
         </div>
     </div>
 
+    <script src="./js/lobby.js"></script>
     <script>
-        // 簡單的大廳邏輯：顯示稱號
-        window.onload = () => {
-            const totalScore = parseInt(localStorage.getItem('sudoku_total_score') || '0');
-            const userName = localStorage.getItem('user_name') || '玩家';
-            document.getElementById('user-name').innerText = userName;
-            
-            let rank = "新手玩家 🌱";
-            if (totalScore >= 150000) rank = "競技戰神 ⚡";
-            else if (totalScore >= 50000) rank = "邏輯大師 🧠";
-            else if (totalScore >= 10000) rank = "數獨達人 🔥";
-            
-            document.getElementById('user-rank-display').innerText = rank;
-        };
-
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW註冊失敗', err));
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('PWA故障', err));
             });
         }
     </script>

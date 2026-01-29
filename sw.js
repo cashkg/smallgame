@@ -1,7 +1,7 @@
 /**
- * PWA Service Worker - 實現離線遊玩與資源快取
+ * PWA Service Worker - v2 (強迫更新版)
  */
-const CACHE_NAME = 'sudoku-arena-v1';
+const CACHE_NAME = 'sudoku-arena-v2'; // 更改版本號觸發更新
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -14,31 +14,29 @@ const ASSETS_TO_CACHE = [
     'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'
 ];
 
-// 安裝階段：下載並儲存所有資源
+// 安裝時跳過等待，立即取代舊版
 self.addEventListener('install', (event) => {
+    self.skipWaiting(); 
     event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(ASSETS_TO_CACHE);
-        })
+        caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
     );
 });
 
-// 啟動階段：清理舊快取
+// 啟動時刪除所有舊版本的快取
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((keys) => {
             return Promise.all(
-                keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+                keys.map(key => {
+                    if (key !== CACHE_NAME) return caches.delete(key);
+                })
             );
-        })
+        }).then(() => self.clients.claim())
     );
 });
 
-// 擷取階段：優先從快取讀取，若無則嘗試連網
 self.addEventListener('fetch', (event) => {
     event.respondWith(
-        caches.match(event.request).then((response) => {
-            return response || fetch(event.request);
-        })
+        caches.match(event.request).then((response) => response || fetch(event.request))
     );
 });

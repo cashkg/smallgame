@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>老爸競技場 | Game Center</title>
+    <title>競技場 | Game Center</title>
     <link rel="stylesheet" href="./css/lobby.css">
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <link rel="rel" href="./manifest.json">
 </head>
 <body>
     <div class="lobby-container">
         <div class="profile-header">
             <div class="avatar-circle">
-                <img id="user-avatar" src="https://via.placeholder.com/60" alt="Avatar">
+                <img id="user-avatar" src="https://via.placeholder.com/60/4A90E2/FFFFFF?text=USER" alt="Avatar">
             </div>
             <div class="user-info">
                 <div class="user-name" id="user-name">玩家載入中...</div>
-                <div class="user-rank">今日數獨榜首 🏆</div>
+                <div class="user-rank">👑 競技場常客</div>
             </div>
         </div>
 
@@ -24,7 +24,7 @@
                 <div class="card-icon">🔢</div>
                 <div class="card-info">
                     <div class="game-title">數獨競技場</div>
-                    <div class="game-desc">極限 64 格挑戰</div>
+                    <div id="sudoku-status" class="game-desc">離線遊玩已就緒</div>
                 </div>
                 <div class="arrow">➜</div>
             </div>
@@ -33,24 +33,23 @@
                 <div class="card-icon">♠️</div>
                 <div class="card-info">
                     <div class="game-title">經典接龍</div>
-                    <div class="game-desc">開發施工中...</div>
+                    <div class="game-desc">開發中</div>
                 </div>
                 <div class="lock-icon">🔒</div>
             </div>
-
-            <div class="game-card disabled">
-                <div class="card-icon">🎮</div>
-                <div class="card-info">
-                    <div class="game-title">敬請期待</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="footer">
-            &copy; 2026 Daddy's Arena. All Rights Reserved.
         </div>
     </div>
 
     <script src="./js/lobby.js"></script>
+    <script>
+        // 註冊 PWA Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('離線支援註冊成功', reg))
+                    .catch(err => console.log('註冊失敗', err));
+            });
+        }
+    </script>
 </body>
 </html>

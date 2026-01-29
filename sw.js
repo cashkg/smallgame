@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sudoku-arena-v3.11'; // 每次更新代碼請改此版本號
+const CACHE_NAME = 'sudoku-arena-v3.111'; // 每次更新代碼請改此版本號
 const ASSETS = [
     './', './index.html', './css/lobby.css', './js/lobby.js',
     './games/sudoku/index.html', './games/sudoku/style.css',

@@ -5,7 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>競技場 | Game Center</title>
     <link rel="stylesheet" href="./css/lobby.css">
-    <link rel="rel" href="./manifest.json">
+    <link rel="manifest" href="./manifest.json">
+    <style>
+        /* 直接在此修正緊急佈局問題 */
+        body { background-color: #F0F2F5; margin: 0; padding: 0; font-family: sans-serif; }
+        .lobby-container { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+    </style>
 </head>
 <body>
     <div class="lobby-container">
@@ -15,16 +20,16 @@
             </div>
             <div class="user-info">
                 <div class="user-name" id="user-name">玩家載入中...</div>
-                <div class="user-rank">👑 競技場常客</div>
+                <div id="user-rank-display" class="user-rank">新手玩家 🌱</div>
             </div>
         </div>
 
         <div class="games-grid">
-            <div class="game-card active" onclick="enterGame('sudoku')">
+            <div class="game-card active" onclick="location.href='./games/sudoku/index.html'">
                 <div class="card-icon">🔢</div>
                 <div class="card-info">
                     <div class="game-title">數獨競技場</div>
-                    <div id="sudoku-status" class="game-desc">離線遊玩已就緒</div>
+                    <div class="game-desc">挑戰 128-bit 極限盤面</div>
                 </div>
                 <div class="arrow">➜</div>
             </div>
@@ -40,14 +45,24 @@
         </div>
     </div>
 
-    <script src="./js/lobby.js"></script>
     <script>
-        // 註冊 PWA Service Worker
+        // 簡單的大廳邏輯：顯示稱號
+        window.onload = () => {
+            const totalScore = parseInt(localStorage.getItem('sudoku_total_score') || '0');
+            const userName = localStorage.getItem('user_name') || '玩家';
+            document.getElementById('user-name').innerText = userName;
+            
+            let rank = "新手玩家 🌱";
+            if (totalScore >= 150000) rank = "競技戰神 ⚡";
+            else if (totalScore >= 50000) rank = "邏輯大師 🧠";
+            else if (totalScore >= 10000) rank = "數獨達人 🔥";
+            
+            document.getElementById('user-rank-display').innerText = rank;
+        };
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('離線支援註冊成功', reg))
-                    .catch(err => console.log('註冊失敗', err));
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW註冊失敗', err));
             });
         }
     </script>

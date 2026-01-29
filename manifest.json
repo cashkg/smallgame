@@ -1,0 +1,22 @@
+{
+  "name": "老爸競技場：數獨",
+  "short_name": "老爸數獨",
+  "description": "挑戰 128-bit 極限盤面的專業數獨競技場",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#2C3E50",
+  "theme_color": "#2C3E50",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192/4A90E2/FFFFFF?text=DAD",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://via.placeholder.com/512/4A90E2/FFFFFF?text=Sudoku",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

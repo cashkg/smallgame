@@ -20,7 +20,7 @@
         </div>
 
         <div class="games-grid">
-            <div class="game-card active" onclick="location.href='./games/sudoku/index.html'">
+            <div class="game-card active" onclick="window.location.href='./games/sudoku/index.html'">
                 <div class="card-icon">🔢</div>
                 <div class="card-info">
                     <div class="game-title">數獨競技場</div>
@@ -42,9 +42,10 @@
 
     <script src="./js/lobby.js"></script>
     <script>
+        // PWA 註冊
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').catch(err => console.log('PWA故障', err));
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('PWA Error', err));
             });
         }
     </script>

@@ -52,7 +52,7 @@ function getClientChecksum() {
 
 // --- [核心優化] 完賽並上傳戰績 ---
 async function uploadRecord(score) {
-    const GAS_URL = "你的_GAS_網頁應用程式網址"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzWvr0O-3kcxKqEGZMCD8_fQegxljPLE2xHh1_V-VZLgfGZbQ9PZulkFnYYA0rNzSn9/exec"; 
     const payload = {
         userName: localStorage.getItem('user_name') || "玩家",
         difficulty: gameState.difficulty,

@@ -57,3 +57,26 @@ body {
 .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .numpad button { height: 60px; font-size: 24px; border-radius: 8px; border: 1px solid #ddd; background: white; cursor: pointer; }
 .tool-btn.active { background: var(--accent-color); color: white; }
+
+/* 數字鍵上的剩餘統計標籤 */
+.numpad button {
+    position: relative;
+    overflow: visible;
+}
+
+.num-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--danger-color);
+    color: white;
+    font-size: 10px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    font-weight: bold;
+}

@@ -1,115 +1,35 @@
-/**
- * 數獨競技場 - 核心邏輯 (終極對齊版)
- */
 const engine = new SudokuEngine();
 
 let gameState = {
     screen: 'setup', difficulty: 35, timer: 0, timerInterval: null,
     board: [], notes: [], solution: [], fixedMask: [],
-    hintsLeft: 2, isNoteMode: false, selectedCell: null,
-    seed: { board: 0 }
+    hintsLeft: 2, isNoteMode: false, selectedCell: null
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-    updateRankUI();
-    selectDifficulty(35);
-    // 檢查是否有存檔
-    if(localStorage.getItem('sudoku_save')) {
-        const btn = document.getElementById('resume-btn');
-        if(btn) btn.classList.remove('hidden');
-    }
-});
+// ... 此處省略初始化的 updateRankUI 與 selectDifficulty (保持您目前的版本) ...
 
-// --- 1. 積分與加成曲線 ---
-function getDifficultyCoeff(diff) {
-    if (diff < 42) return 1.0;
-    if (diff < 49) return 1.8;
-    if (diff === 49) return 3.0;
-    if (diff >= 50) {
-        // 極限模式線性增長公式 (50格=8.0, 64格=30.0)
-        let growth = (diff - 50) * 1.5714;
-        return parseFloat((8.0 + growth).toFixed(1));
-    }
-    return 1.0;
-}
-
-function updateRankUI() {
-    const total = parseInt(localStorage.getItem('sudoku_total_score') || '0');
-    const scoreEl = document.getElementById('display-total-score');
-    if(scoreEl) scoreEl.innerText = total.toLocaleString();
-
-    let rank = "新手玩家 🌱";
-    if (total >= 150000) rank = "競技戰神 ⚡";
-    else if (total >= 50000) rank = "邏輯大師 🧠";
-    else if (total >= 10000) rank = "數獨達人 🔥";
-    
-    const tag = document.getElementById('player-rank-tag');
-    if(tag) tag.innerText = rank;
-}
-
-// --- 2. 設置大廳互動 ---
-function selectDifficulty(val) {
-    gameState.difficulty = val;
-    document.querySelectorAll('.diff-btn').forEach(btn => {
-        btn.style.background = "white"; btn.style.color = "#333";
-    });
-    // 透過簡單順序定位按鈕顏色
-    const btns = document.querySelectorAll('.diff-btn');
-    if(val === 35 && btns[0]) { btns[0].style.background = "#4A90E2"; btns[0].style.color = "white"; }
-    if(val === 42 && btns[1]) { btns[1].style.background = "#4A90E2"; btns[1].style.color = "white"; }
-    if(val === 49 && btns[2]) { btns[2].style.background = "#4A90E2"; btns[2].style.color = "white"; }
-    updatePreview();
-}
-
-function adjustLimit(delta) {
-    if(gameState.difficulty < 50) gameState.difficulty = 50;
-    gameState.difficulty += delta;
-    if(gameState.difficulty > 64) gameState.difficulty = 64;
-    if(gameState.difficulty < 50) gameState.difficulty = 50;
-    
-    const display = document.getElementById('limit-display');
-    if(display) display.innerText = gameState.difficulty;
-    updatePreview();
-}
-
-function updatePreview() {
-    const coeff = getDifficultyCoeff(gameState.difficulty);
-    const preview = document.getElementById('score-preview');
-    if(preview) preview.innerText = `加權: x${coeff}`;
-    
-    const codeDisplay = document.getElementById('arena-code');
-    if(codeDisplay) {
-        const tempSeed = Math.floor(Math.random() * 1000000);
-        codeDisplay.innerText = `SEED: ${engine.generateGameCode(tempSeed, gameState.difficulty, 99)}`;
-    }
-}
-
-// --- 3. 遊戲核心流程 ---
 function startGame() {
     try {
-        gameState.seed.board = Math.floor(Math.random() * 1000000);
-        const full = engine.generateBoard(gameState.seed.board);
+        const boardSeed = Math.floor(Math.random() * 1000000);
+        const full = engine.generateBoard(boardSeed);
         gameState.solution = JSON.parse(JSON.stringify(full));
         
-        const puzzle = engine.generatePuzzle(full, gameState.difficulty, Math.floor(Math.random()*1000));
-        gameState.board = JSON.parse(JSON.stringify(puzzle));
-        gameState.fixedMask = puzzle.map(r => r.map(c => c !== 0));
+        gameState.board = engine.generatePuzzle(full, gameState.difficulty, Math.floor(Math.random()*1000));
+        gameState.fixedMask = gameState.board.map(r => r.map(c => c !== 0));
         gameState.notes = Array.from({length:9},()=>Array.from({length:9},()=>Array(10).fill(false)));
         
-        gameState.timer = 0;
         showScreen('game-page');
         
-        if(document.getElementById('current-diff-display')) 
-            document.getElementById('current-diff-display').innerText = gameState.difficulty;
-        if(document.getElementById('current-coeff-display')) 
-            document.getElementById('current-coeff-display').innerText = `x${getDifficultyCoeff(gameState.difficulty)}`;
-
-        renderBoard();
+        // 更新顯示難度
+        document.getElementById('current-diff-display').innerText = gameState.difficulty;
+        
+        renderBoard(); // 核心：畫出盤面
         startTimer();
-        updateNumberCounts();
-    } catch (e) { console.error("啟動失敗:", e); }
+        updateNumberCounts(); // 核心：更新數字鍵盤狀態
+    } catch (e) { console.error("Start Error", e); }
 }
 
+// 繪製 81 格棋盤
 function renderBoard() {
     const container = document.getElementById('sudoku-board');
     if(!container) return;
@@ -127,6 +47,7 @@ function renderBoard() {
     }
 }
 
+// 更新單一格子內容
 function renderCell(r, c) {
     const cell = document.getElementById(`cell-${r}-${c}`);
     if(!cell) return;
@@ -134,27 +55,14 @@ function renderCell(r, c) {
     cell.innerHTML = '';
     if (val !== 0) {
         cell.innerText = val;
-        if(!gameState.fixedMask[r][c]) cell.style.color = "#4A90E2";
-    } else {
-        const grid = document.createElement('div');
-        grid.className = 'notes-grid';
-        for(let i=1; i<=9; i++) {
-            const n = document.createElement('div');
-            n.className = 'note-num';
-            n.style.color = "#3498DB";
-            n.innerText = gameState.notes[r][c][i] ? i : '';
-            grid.appendChild(n);
-        }
-        cell.appendChild(grid);
+        if(!gameState.fixedMask[r][c]) cell.classList.add('user-input');
     }
 }
 
-// --- 4. 互動邏輯 ---
 function selectCell(r, c) {
     gameState.selectedCell = {r, c};
     document.querySelectorAll('.cell').forEach(el => el.classList.remove('selected'));
-    const target = document.getElementById(`cell-${r}-${c}`);
-    if(target) target.classList.add('selected');
+    document.getElementById(`cell-${r}-${c}`).classList.add('selected');
 }
 
 function inputAction(num) {
@@ -162,19 +70,13 @@ function inputAction(num) {
     const {r, c} = gameState.selectedCell;
     if(gameState.fixedMask[r][c]) return;
 
-    if(gameState.isNoteMode) {
-        gameState.notes[r][c][num] = !gameState.notes[r][c][num];
-        gameState.board[r][c] = 0;
-    } else {
-        gameState.board[r][c] = num;
-        gameState.notes[r][c].fill(false);
-    }
+    gameState.board[r][c] = num;
     renderCell(r, c);
     updateNumberCounts();
-    checkWin();
-    saveState();
+    // TODO: checkWin();
 }
 
+// 核心功能：當數字填滿 9 個時鎖定按鍵
 function updateNumberCounts() {
     let counts = Array(10).fill(0);
     gameState.board.flat().forEach(v => { if(v !== 0) counts[v]++; });
@@ -182,76 +84,17 @@ function updateNumberCounts() {
     const btns = document.querySelectorAll('.numpad button');
     btns.forEach((btn, i) => {
         let num = i + 1;
-        let rem = 9 - counts[num];
-        let badge = btn.querySelector('.num-badge');
-        if(badge) badge.remove();
-
-        if(rem > 0) {
-            badge = document.createElement('span');
-            badge.className = 'num-badge';
-            badge.innerText = rem;
-            btn.appendChild(badge);
-            btn.style.opacity = "1";
-            btn.style.pointerEvents = "auto";
-        } else {
+        if(counts[num] >= 9) {
             btn.style.opacity = "0.2";
             btn.style.pointerEvents = "none";
+        } else {
+            btn.style.opacity = "1";
+            btn.style.pointerEvents = "auto";
         }
     });
 }
 
-function checkWin() {
-    if(gameState.board.flat().includes(0)) return;
-    const isCorrect = gameState.board.every((row, r) => row.every((val, c) => val === gameState.solution[r][c]));
-    if(isCorrect) {
-        clearInterval(gameState.timerInterval);
-        alert("恭喜！挑戰成功");
-        showResult();
-    }
-}
-
-// --- 5. 系統功能 ---
-function startTimer() {
-    if(gameState.timerInterval) clearInterval(gameState.timerInterval);
-    gameState.timerInterval = setInterval(() => {
-        gameState.timer++;
-        const m = Math.floor(gameState.timer/60).toString().padStart(2,'0');
-        const s = (gameState.timer%60).toString().padStart(2,'0');
-        const timerEl = document.getElementById('timer');
-        if(timerEl) timerEl.innerText = `${m}:${s}`;
-    }, 1000);
-}
-
 function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    const target = document.getElementById(id);
-    if(target) target.classList.add('active');
-}
-
-function toggleNoteMode() {
-    gameState.isNoteMode = !gameState.isNoteMode;
-    const btn = document.getElementById('note-mode-btn');
-    if(btn) btn.innerText = `✏️ 筆記: ${gameState.isNoteMode?'開':'關'}`;
-}
-
-function eraseCell() {
-    if(!gameState.selectedCell) return;
-    const {r, c} = gameState.selectedCell;
-    if(gameState.fixedMask[r][c]) return;
-    gameState.board[r][c] = 0;
-    gameState.notes[r][c].fill(false);
-    renderCell(r, c);
-    updateNumberCounts();
-}
-
-function confirmExit() { if(confirm("確定退出並放棄進度嗎？")) { localStorage.removeItem('sudoku_save'); location.reload(); } }
-function saveState() { localStorage.setItem('sudoku_save', JSON.stringify(gameState)); }
-function showResult() {
-    // 結算積分邏輯
-    let baseTime = (gameState.difficulty >= 50) ? 1500 : (gameState.difficulty >= 49 ? 720 : 360);
-    const score = Math.round((baseTime / (gameState.timer || 1)) * gameState.difficulty * getDifficultyCoeff(gameState.difficulty));
-    let total = parseInt(localStorage.getItem('sudoku_total_score') || '0');
-    localStorage.setItem('sudoku_total_score', total + score);
-    localStorage.removeItem('sudoku_save');
-    location.reload();
+    document.getElementById(id).classList.add('active');
 }

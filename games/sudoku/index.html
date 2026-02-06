@@ -25,7 +25,7 @@
 </head>
 <body style="margin:0; background:#F8F9FA;">
     <div id="setup-page" class="screen active">
-        <div style="background:#2C3E50; color:white; padding:20px; border-radius:12px; text-align:center;">
+        <div class="rank-banner" style="background:#2C3E50; color:white; padding:20px; border-radius:12px; text-align:center;">
             <div id="player-rank-tag">載入中...</div>
             <div id="display-total-score" style="font-size:28px; font-weight:bold; color:#F1C40F;">0</div>
         </div>
@@ -35,27 +35,42 @@
                 <button class="diff-btn" onclick="selectDifficulty(42)" style="flex:1; padding:12px; border-radius:8px;">中級 42</button>
                 <button class="diff-btn" onclick="selectDifficulty(49)" style="flex:1; padding:12px; border-radius:8px;">高級 49</button>
             </div>
+            <div style="margin-top:15px; background:#FFF3E0; padding:15px; border-radius:12px;">
+                <div style="text-align:center; font-weight:bold; color:#E67E22;">🔥 極限模式 (50-64格)</div>
+                <div style="display:flex; justify-content:center; align-items:center; gap:20px; margin:10px 0;">
+                    <button onclick="adjustLimit(-1)" style="width:40px; height:40px; font-size:24px;">−</button>
+                    <span id="limit-display" style="font-size:32px; font-weight:bold;">50</span>
+                    <button onclick="adjustLimit(1)" style="width:40px; height:40px; font-size:24px;">+</button>
+                </div>
+                <div id="score-preview" style="text-align:center; font-weight:bold; color:#D35400;">加權: x8.0</div>
+            </div>
             <button class="main-btn primary" onclick="startGame()" style="width:100%; margin-top:20px; padding:18px; background:#4A90E2; color:white; border:none; border-radius:50px; font-size:20px; font-weight:bold;">進入競技場</button>
         </div>
     </div>
 
     <div id="game-page" class="screen">
         <div style="display:flex; justify-content:space-between; align-items:center; background:#4A90E2; color:white; padding:10px; border-radius:8px;">
-            <div>難度: <span id="current-diff-display">--</span></div>
+            <div>難度: <span id="current-diff-display">--</span> (<span id="current-coeff-display">x1.0</span>)</div>
             <div id="timer">00:00</div>
-            <button onclick="confirmExit()" style="background:#E74C3C; border:none; color:white; padding:5px 10px; border-radius:4px;">退出</button>
+            <button onclick="confirmExit()" style="background:#E74C3C; border:none; color:white; padding:5px 12px; border-radius:4px;">退出</button>
         </div>
         <div id="sudoku-board" class="sudoku-board"></div>
-        <div class="numpad" style="display:grid; grid-template-columns: repeat(9, 1fr); gap:5px;">
-            <button onclick="inputAction(1)" style="height:45px; position:relative;">1</button>
-            <button onclick="inputAction(2)" style="height:45px; position:relative;">2</button>
-            <button onclick="inputAction(3)" style="height:45px; position:relative;">3</button>
-            <button onclick="inputAction(4)" style="height:45px; position:relative;">4</button>
-            <button onclick="inputAction(5)" style="height:45px; position:relative;">5</button>
-            <button onclick="inputAction(6)" style="height:45px; position:relative;">6</button>
-            <button onclick="inputAction(7)" style="height:45px; position:relative;">7</button>
-            <button onclick="inputAction(8)" style="height:45px; position:relative;">8</button>
-            <button onclick="inputAction(9)" style="height:45px; position:relative;">9</button>
+        <div class="controls">
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <button id="note-mode-btn" onclick="toggleNoteMode()" style="flex:1; padding:12px; background:white; border:1px solid #ccc; border-radius:8px;">✏️ 筆記: 關</button>
+                <button onclick="eraseCell()" style="flex:1; padding:12px; background:white; border:1px solid #ccc; border-radius:8px;">⌫ 擦除</button>
+            </div>
+            <div class="numpad" style="display:grid; grid-template-columns: repeat(9, 1fr); gap:5px;">
+                <button onclick="inputAction(1)" style="height:45px; position:relative;">1</button>
+                <button onclick="inputAction(2)" style="height:45px; position:relative;">2</button>
+                <button onclick="inputAction(3)" style="height:45px; position:relative;">3</button>
+                <button onclick="inputAction(4)" style="height:45px; position:relative;">4</button>
+                <button onclick="inputAction(5)" style="height:45px; position:relative;">5</button>
+                <button onclick="inputAction(6)" style="height:45px; position:relative;">6</button>
+                <button onclick="inputAction(7)" style="height:45px; position:relative;">7</button>
+                <button onclick="inputAction(8)" style="height:45px; position:relative;">8</button>
+                <button onclick="inputAction(9)" style="height:45px; position:relative;">9</button>
+            </div>
         </div>
     </div>
     <script src="./js/engine.js"></script>

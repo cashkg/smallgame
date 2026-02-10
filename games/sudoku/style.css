@@ -1,13 +1,18 @@
-/* 1. 核心盤面修正 - 解決右側格線消失 */
+/* 核心容器防塌陷 */
+.screen { display: none; width: 100%; max-width: 480px; flex-direction: column; padding: 15px; box-sizing: border-box; margin: 0 auto; }
+.screen.active { display: flex !important; }
+
+/* 1. 數獨盤面 - 修正邊界線 */
 .sudoku-board {
     display: grid;
     grid-template-columns: repeat(9, 1fr);
     aspect-ratio: 1 / 1;
     width: 100%;
-    background-color: #333; /* 格線顏色 */
-    border: 2px solid #333; /* 四周邊框 */
+    background-color: #333;
+    border: 2px solid #333;
     box-sizing: border-box;
     gap: 1px;
+    margin: 15px 0;
 }
 
 .cell {
@@ -19,32 +24,46 @@
     font-size: 22px;
     cursor: pointer;
     aspect-ratio: 1 / 1;
+    position: relative;
+    user-select: none;
 }
 
-/* 2. 模式選擇按鈕 - 明顯選中外框 */
+/* 2. 3x3 粗線區隔 */
+.cell:nth-child(3n) { border-right: 1px solid #333; }
+.cell:nth-child(9n) { border-right: none; }
+.cell:nth-child(n+19):nth-child(-n+27),
+.cell:nth-child(n+46):nth-child(-n+54) { border-bottom: 2px solid #333; }
+
+/* 3. 高亮狀態 */
+.cell.selected { background-color: #BBDEFB !important; outline: 2px solid #1976D2; z-index: 5; }
+.cell.same-num { background-color: #FFE0B2 !important; color: #E65100 !important; font-weight: bold; }
+.cell.fixed { background-color: #f8f9fa; color: #000; font-weight: bold; }
+.cell.user-input { color: #1976D2; }
+
+/* 4. 模式按鈕選中效果 */
 .diff-btn.active {
     border: 3px solid #4A90E2 !important;
     background-color: #E3F2FD !important;
     font-weight: bold;
-    transform: scale(1.05);
+    box-shadow: 0 0 8px rgba(74, 144, 226, 0.5);
 }
 
-/* 3. 點擊數字 - 相同數字高亮 (醒目橘色) */
-.cell.same-num {
-    background-color: #FFE0B2 !important; /* 淺橘色背景 */
-    color: #E65100 !important;          /* 深橘色文字 */
-}
-
-/* 4. 選中格子高亮 (原本藍色保留，但增加權重) */
-.cell.selected {
-    background-color: #BBDEFB !important;
-    outline: 2px solid #1976D2;
-    z-index: 10;
-}
-
-/* 5. 筆記樣式優化 */
-.note-num {
-    color: #1976D2 !important;
+/* 5. 數字鍵盤小標籤 */
+.num-badge {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
     font-size: 10px;
-    font-weight: normal;
+    color: #757575;
+}
+
+/* 6. 筆記網格 */
+.notes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    width: 100%; height: 100%;
+}
+.note-num {
+    font-size: 9px; color: #1976D2; display: flex; 
+    justify-content: center; align-items: center;
 }

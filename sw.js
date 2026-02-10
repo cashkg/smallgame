@@ -1,4 +1,7 @@
-const CACHE_NAME = 'sudoku-arena-v4.1'; // 每次更新代碼請改此版本號
+/**
+ * PWA Service Worker - v5.0 (強制刷新版)
+ */
+const CACHE_NAME = 'sudoku-arena-v5.0';
 const ASSETS = [
     './', './index.html', './css/lobby.css', './js/lobby.js',
     './games/sudoku/index.html', './games/sudoku/style.css',
@@ -6,7 +9,7 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (e) => {
-    self.skipWaiting(); // 強制跳過等待，立即更新
+    self.skipWaiting();
     e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
 });
 
@@ -16,7 +19,6 @@ self.addEventListener('activate', (e) => {
     )).then(() => self.clients.claim()));
 });
 
-// 策略：網路優先，失敗才用快取，並在背景更新快取
 self.addEventListener('fetch', (e) => {
     e.respondWith(
         fetch(e.request).then(res => {

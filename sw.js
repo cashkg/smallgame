@@ -1,7 +1,7 @@
 /**
- * PWA Service Worker - v5.5 (強制刷新版)
+ * PWA Service Worker - v5.6 (強制刷新版)
  */
-const CACHE_NAME = 'sudoku-arena-v5.5';
+const CACHE_NAME = 'sudoku-arena-v5.6';
 const ASSETS = [
     './', './index.html', './css/lobby.css', './js/lobby.js',
     './games/sudoku/index.html', './games/sudoku/style.css',

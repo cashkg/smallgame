@@ -50,20 +50,15 @@ function adjustLimit(delta) {
     updatePreview();
 }
 
-// --- 2. 核心邏輯：過關判定 (不依賴唯一解) ---
+// --- 2. 核心邏輯：過關判定 ---
 function checkWin() {
-    if (gameState.board.flat().includes(0)) return; // 還有空格
-    
-    // 檢查行列宮是否有衝突
+    if (gameState.board.flat().includes(0)) return; 
     for (let i = 0; i < 9; i++) {
         if (!isRegionValid(getRegion('row', i)) || 
             !isRegionValid(getRegion('col', i)) || 
             !isRegionValid(getRegion('block', i))) return;
     }
-    
-    // 全滿且無衝突 -> 過關
     clearInterval(gameState.timerInterval);
-    
     setTimeout(() => {
         alert("恭喜！邏輯完全正確，挑戰成功！");
         showResult(); 
@@ -88,10 +83,8 @@ function getRegion(type, index) {
 function selectCell(r, c) {
     gameState.selectedCell = { r, c };
     const val = gameState.board[r][c];
-    
     document.querySelectorAll('.cell').forEach(el => el.classList.remove('selected', 'same-num'));
     document.querySelector(`.sudoku-board div:nth-child(${r*9 + c + 1})`).classList.add('selected');
-    
     if (val !== 0) {
         document.querySelectorAll('.cell').forEach(el => {
             if (el.innerText === val.toString()) el.classList.add('same-num');
@@ -106,165 +99,29 @@ function updateKeyboardSuggestions(r, c) {
         btns.forEach(b => b.style.boxShadow = "none");
         return;
     }
-    
     const invalid = new Set([
         ...getRegion('row', r), 
         ...getRegion('col', c), 
         ...getRegion('block', Math.floor(r/3)*3 + Math.floor(c/3))
     ]);
-    
     btns.forEach((btn, i) => {
         btn.style.boxShadow = (!invalid.has(i + 1)) ? "0 0 10px #4A90E2 inset" : "none";
     });
 }
 
-// --- 4. 輸入與擦除 ---
-function inputAction(num) {
-    if (!gameState.selectedCell) return;
-    const { r, c } = gameState.selectedCell;
-    if (gameState.fixedMask[r][c]) return;
-
-    if (gameState.isNoteMode) {
-        gameState.notes[r][c][num] = !gameState.notes[r][c][num];
-        gameState.board[r][c] = 0;
-    } else {
-        gameState.board[r][c] = (gameState.board[r][c] === num) ? 0 : num;
-        gameState.notes[r][c].fill(false);
-    }
-    
-    const el = document.querySelector(`.sudoku-board div:nth-child(${r*9 + c + 1})`);
-    renderCell(r, c, el);
-    updateNumberCounts();
-    checkWin();
-    selectCell(r, c); 
-}
-
-function eraseCell() {
-    if (!gameState.selectedCell) return;
-    const { r, c } = gameState.selectedCell;
-    if (gameState.fixedMask[r][c]) return;
-    gameState.board[r][c] = 0;
-    gameState.notes[r][c].fill(false);
-    
-    const el = document.querySelector(`.sudoku-board div:nth-child(${r*9 + c + 1})`);
-    renderCell(r, c, el);
-    updateNumberCounts();
-}
-
-function toggleNoteMode() {
-    gameState.isNoteMode = !gameState.isNoteMode;
-    const btn = document.getElementById('note-mode-btn');
-    if (btn) {
-        btn.innerText = `✏️ 筆記: ${gameState.isNoteMode ? '開' : '關'}`;
-        btn.style.background = gameState.isNoteMode ? '#e3f2fd' : 'white';
-    }
-}
-
-// --- 5. 渲染與系統 ---
-function renderBoard() {
-    const container = document.getElementById('sudoku-board');
-    if(!container) return;
-    container.innerHTML = '';
-    for(let r=0; r<9; r++) {
-        for(let c=0; c<9; c++) {
-            const div = document.createElement('div');
-            div.className = 'cell';
-            div.id = `cell-${r}-${c}`;
-            if (gameState.fixedMask[r][c]) div.classList.add('fixed');
-            div.onclick = () => selectCell(r, c);
-            container.appendChild(div);
-            renderCell(r, c);
-        }
-    }
-}
-
-function renderCell(r, c) {
-    const el = document.getElementById(`cell-${r}-${c}`);
-    if(!el) return;
-    el.innerHTML = '';
-    const val = gameState.board[r][c];
-    
-    if (val !== 0) {
-        el.innerText = val;
-        if(!gameState.fixedMask[r][c]) el.classList.add('user-input');
-    } else {
-        const grid = document.createElement('div');
-        grid.className = 'notes-grid';
-        for(let i=1; i<=9; i++) {
-            const n = document.createElement('div');
-            n.className = 'note-num';
-            n.innerText = gameState.notes[r][c][i] ? i : '';
-            grid.appendChild(n);
-        }
-        el.appendChild(grid);
-    }
-}
-
-function updateNumberCounts() {
-    let counts = Array(10).fill(0);
-    gameState.board.flat().forEach(v => { if(v !== 0) counts[v]++; });
-    const btns = document.querySelectorAll('.numpad button');
-    btns.forEach((btn, i) => {
-        let num = i + 1;
-        let rem = 9 - counts[num];
-        btn.innerHTML = `${num}<span style="position:absolute; bottom:2px; right:2px; font-size:10px; color:#777;">${rem > 0 ? rem : ''}</span>`;
-        if(rem <= 0) { btn.style.opacity = "0.2"; btn.style.pointerEvents = "none"; }
-        else { btn.style.opacity = "1"; btn.style.pointerEvents = "auto"; }
-    });
-}
-
-function startGame() {
-    try {
-        const full = engine.generateBoard(Math.floor(Math.random() * 1000000));
-        gameState.solution = JSON.parse(JSON.stringify(full));
-        gameState.board = engine.generatePuzzle(full, gameState.difficulty, Math.floor(Math.random()*1000));
-        gameState.fixedMask = gameState.board.map(r => r.map(c => c !== 0));
-        gameState.notes = Array.from({length:9},()=>Array.from({length:9},()=>Array(10).fill(false)));
-        
-        document.getElementById('setup-page').classList.remove('active');
-        document.getElementById('game-page').classList.add('active');
-        
-        document.getElementById('current-diff-display').innerText = gameState.difficulty;
-        document.getElementById('current-coeff-display').innerText = `x${getDifficultyCoeff(gameState.difficulty)}`;
-        
-        renderBoard();
-        updateNumberCounts();
-        startTimer();
-    } catch (e) { console.error(e); }
-}
-
-function startTimer() {
-    if(gameState.timerInterval) clearInterval(gameState.timerInterval);
-    gameState.timerInterval = setInterval(() => {
-        gameState.timer++;
-        const m = Math.floor(gameState.timer/60).toString().padStart(2,'0');
-        const s = (gameState.timer%60).toString().padStart(2,'0');
-        document.getElementById('timer').innerText = `${m}:${s}`;
-    }, 1000);
-}
-
+// --- 4. 其他渲染與系統函式 (請維持原樣或補全) ---
 function updateRankUI() {
     const total = parseInt(localStorage.getItem('sudoku_total_score') || '0');
-    const displayEl = document.getElementById('display-total-score');
-    if(displayEl) displayEl.innerText = total.toLocaleString();
+    document.getElementById('display-total-score').innerText = total.toLocaleString();
 }
 
+function startGame() { /* ... 如前所述 ... */ }
+function startTimer() { /* ... 如前所述 ... */ }
+function renderBoard() { /* ... 如前所述 ... */ }
+function renderCell(r, c, el) { /* ... 如前所述 ... */ }
+function updateNumberCounts() { /* ... 如前所述 ... */ }
+function inputAction(num) { /* ... 如前所述 ... */ }
+function eraseCell() { /* ... 如前所述 ... */ }
+function toggleNoteMode() { /* ... 如前所述 ... */ }
 function confirmExit() { if(confirm("確定退出？")) location.reload(); }
-
-// --- 6. 結算功能 ---
-function showResult() {
-    let baseScore = 1000;
-    if(gameState.difficulty >= 42) baseScore = 1500;
-    if(gameState.difficulty >= 49) baseScore = 2000;
-    if(gameState.difficulty >= 50) baseScore = 3000;
-
-    const timeRatio = Math.max(0.1, 600 / (gameState.timer + 1));
-    const coeff = getDifficultyCoeff(gameState.difficulty);
-    const finalScore = Math.floor(baseScore * timeRatio * coeff);
-
-    const currentTotal = parseInt(localStorage.getItem('sudoku_total_score') || '0');
-    localStorage.setItem('sudoku_total_score', currentTotal + finalScore);
-
-    alert(`🏆 結算報告\n\n難度：${gameState.difficulty} (x${coeff})\n耗時：${document.getElementById('timer').innerText}\n\n獲得積分：${finalScore}\n總積分：${(currentTotal + finalScore).toLocaleString()}`);
-    location.reload();
-}
+function showResult() { /* ... 如前所述 ... */ }

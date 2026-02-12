@@ -6,19 +6,22 @@
     <title>數獨競技場 | Sudoku Arena</title>
     <link rel="stylesheet" href="./style.css">
     <style>
-        .screen { display: none; width: 100%; max-width: 480px; flex-direction: column; padding: 15px; box-sizing: border-box; margin: 0 auto; }
+        .screen { display: none; width: 100%; max-width: 480px; flex-direction: column; padding: 10px; box-sizing: border-box; margin: 0 auto; overflow-x: hidden; }
         .screen.active { display: flex !important; }
         
-        /* 強制修復格線與邊框 */
+        /* 強制修復格線與邊框 - 修正寬度避免溢出 */
         .sudoku-board {
             display: grid; grid-template-columns: repeat(9, 1fr);
-            aspect-ratio: 1 / 1; width: 100%; background: #333;
-            border: 2px solid #333; gap: 1px; margin: 15px 0;
-            box-sizing: border-box; /* 關鍵：解決右邊線消失 */
+            aspect-ratio: 1 / 1; 
+            width: 100%; 
+            max-width: 100%; /* 確保不超過螢幕 */
+            background: #333;
+            border: 2px solid #333; gap: 1px; margin: 10px 0;
+            box-sizing: border-box;
         }
         .cell { 
             background: #fff; display: flex; justify-content: center; align-items: center; 
-            font-size: 22px; cursor: pointer; aspect-ratio: 1/1; position: relative; 
+            font-size: 20px; cursor: pointer; aspect-ratio: 1/1; position: relative; 
             box-sizing: border-box; 
         }
         /* 3x3 區域粗線 */
@@ -60,6 +63,7 @@
         <div id="arena-code" style="font-size:10px; color:#999; text-align:center; margin-top:15px; font-family:monospace;">SEED: Generating...</div>
 
         <button class="main-btn primary" onclick="startGame()" style="width:100%; margin-top:20px; padding:18px; background:#4A90E2; color:white; border:none; border-radius:50px; font-size:20px; font-weight:bold;">進入競技場</button>
+        <button onclick="location.href='../../index.html'" style="width:100%; margin-top:10px; background:none; border:none; color:#777; padding:10px;">回主大廳</button>
     </div>
 
     <div id="game-page" class="screen">

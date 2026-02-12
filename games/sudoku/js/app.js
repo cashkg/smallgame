@@ -1,5 +1,5 @@
 /**
- * 數獨競技場 - 核心邏輯 (修復版)
+ * 數獨競技場 - 核心邏輯 (最終完整修復版)
  */
 const engine = new SudokuEngine();
 let gameState = {
@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     selectDifficulty(35);
 });
 
+// --- 1. 積分與 UI 連動 ---
 function getDifficultyCoeff(diff) {
     if (diff < 42) return 1.0;
     if (diff < 49) return 1.8;
@@ -44,20 +45,25 @@ function selectDifficulty(val) {
 function adjustLimit(delta) {
     if(gameState.difficulty < 50) gameState.difficulty = 50;
     gameState.difficulty = Math.max(50, Math.min(64, gameState.difficulty + delta));
-    const display = document.getElementById('limit-display');
-    if(display) display.innerText = gameState.difficulty;
+    document.getElementById('limit-display').innerText = gameState.difficulty;
     document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
     updatePreview();
 }
 
+// --- 2. 核心邏輯：過關判定 (不依賴唯一解) ---
 function checkWin() {
-    if (gameState.board.flat().includes(0)) return;
+    if (gameState.board.flat().includes(0)) return; // 還有空格
+    
+    // 檢查行列宮是否有衝突
     for (let i = 0; i < 9; i++) {
         if (!isRegionValid(getRegion('row', i)) || 
             !isRegionValid(getRegion('col', i)) || 
             !isRegionValid(getRegion('block', i))) return;
     }
+    
+    // 全滿且無衝突 -> 過關
     clearInterval(gameState.timerInterval);
+    
     setTimeout(() => {
         alert("恭喜！邏輯完全正確，挑戰成功！");
         showResult(); 
@@ -78,11 +84,14 @@ function getRegion(type, index) {
     return res;
 }
 
+// --- 3. 點擊與輔助高亮 ---
 function selectCell(r, c) {
     gameState.selectedCell = { r, c };
     const val = gameState.board[r][c];
+    
     document.querySelectorAll('.cell').forEach(el => el.classList.remove('selected', 'same-num'));
     document.querySelector(`.sudoku-board div:nth-child(${r*9 + c + 1})`).classList.add('selected');
+    
     if (val !== 0) {
         document.querySelectorAll('.cell').forEach(el => {
             if (el.innerText === val.toString()) el.classList.add('same-num');
@@ -97,20 +106,24 @@ function updateKeyboardSuggestions(r, c) {
         btns.forEach(b => b.style.boxShadow = "none");
         return;
     }
+    
     const invalid = new Set([
         ...getRegion('row', r), 
         ...getRegion('col', c), 
         ...getRegion('block', Math.floor(r/3)*3 + Math.floor(c/3))
     ]);
+    
     btns.forEach((btn, i) => {
         btn.style.boxShadow = (!invalid.has(i + 1)) ? "0 0 10px #4A90E2 inset" : "none";
     });
 }
 
+// --- 4. 輸入與擦除 ---
 function inputAction(num) {
     if (!gameState.selectedCell) return;
     const { r, c } = gameState.selectedCell;
     if (gameState.fixedMask[r][c]) return;
+
     if (gameState.isNoteMode) {
         gameState.notes[r][c][num] = !gameState.notes[r][c][num];
         gameState.board[r][c] = 0;
@@ -118,6 +131,7 @@ function inputAction(num) {
         gameState.board[r][c] = (gameState.board[r][c] === num) ? 0 : num;
         gameState.notes[r][c].fill(false);
     }
+    
     const el = document.querySelector(`.sudoku-board div:nth-child(${r*9 + c + 1})`);
     renderCell(r, c, el);
     updateNumberCounts();
@@ -131,6 +145,7 @@ function eraseCell() {
     if (gameState.fixedMask[r][c]) return;
     gameState.board[r][c] = 0;
     gameState.notes[r][c].fill(false);
+    
     const el = document.querySelector(`.sudoku-board div:nth-child(${r*9 + c + 1})`);
     renderCell(r, c, el);
     updateNumberCounts();
@@ -145,8 +160,10 @@ function toggleNoteMode() {
     }
 }
 
+// --- 5. 渲染與系統 ---
 function renderBoard() {
     const container = document.getElementById('sudoku-board');
+    if(!container) return;
     container.innerHTML = '';
     for(let r=0; r<9; r++) {
         for(let c=0; c<9; c++) {
@@ -156,14 +173,17 @@ function renderBoard() {
             if (gameState.fixedMask[r][c]) div.classList.add('fixed');
             div.onclick = () => selectCell(r, c);
             container.appendChild(div);
-            renderCell(r, c, div);
+            renderCell(r, c);
         }
     }
 }
 
-function renderCell(r, c, el) {
+function renderCell(r, c) {
+    const el = document.getElementById(`cell-${r}-${c}`);
+    if(!el) return;
     el.innerHTML = '';
     const val = gameState.board[r][c];
+    
     if (val !== 0) {
         el.innerText = val;
         if(!gameState.fixedMask[r][c]) el.classList.add('user-input');
@@ -200,10 +220,13 @@ function startGame() {
         gameState.board = engine.generatePuzzle(full, gameState.difficulty, Math.floor(Math.random()*1000));
         gameState.fixedMask = gameState.board.map(r => r.map(c => c !== 0));
         gameState.notes = Array.from({length:9},()=>Array.from({length:9},()=>Array(10).fill(false)));
+        
         document.getElementById('setup-page').classList.remove('active');
         document.getElementById('game-page').classList.add('active');
+        
         document.getElementById('current-diff-display').innerText = gameState.difficulty;
         document.getElementById('current-coeff-display').innerText = `x${getDifficultyCoeff(gameState.difficulty)}`;
+        
         renderBoard();
         updateNumberCounts();
         startTimer();
@@ -222,21 +245,26 @@ function startTimer() {
 
 function updateRankUI() {
     const total = parseInt(localStorage.getItem('sudoku_total_score') || '0');
-    document.getElementById('display-total-score').innerText = total.toLocaleString();
+    const displayEl = document.getElementById('display-total-score');
+    if(displayEl) displayEl.innerText = total.toLocaleString();
 }
 
 function confirmExit() { if(confirm("確定退出？")) location.reload(); }
 
+// --- 6. 結算功能 ---
 function showResult() {
     let baseScore = 1000;
     if(gameState.difficulty >= 42) baseScore = 1500;
     if(gameState.difficulty >= 49) baseScore = 2000;
     if(gameState.difficulty >= 50) baseScore = 3000;
+
     const timeRatio = Math.max(0.1, 600 / (gameState.timer + 1));
     const coeff = getDifficultyCoeff(gameState.difficulty);
     const finalScore = Math.floor(baseScore * timeRatio * coeff);
+
     const currentTotal = parseInt(localStorage.getItem('sudoku_total_score') || '0');
     localStorage.setItem('sudoku_total_score', currentTotal + finalScore);
+
     alert(`🏆 結算報告\n\n難度：${gameState.difficulty} (x${coeff})\n耗時：${document.getElementById('timer').innerText}\n\n獲得積分：${finalScore}\n總積分：${(currentTotal + finalScore).toLocaleString()}`);
     location.reload();
 }
